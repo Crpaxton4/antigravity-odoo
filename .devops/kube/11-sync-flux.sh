@@ -17,12 +17,14 @@ echo ""
 echo "2. Reconciling HelmCharts..."
 for chart in postgresql odoo n8n ollama pgadmin monitoring; do
     echo "  - Reconciling ${chart}..."
-    flux reconcile helmchart "antigravity-dev-${chart}" -n flux-system 2>/dev/null || true
+    flux reconcile source helmchart "antigravity-dev-${chart}" -n flux-system 2>/dev/null || true
 done
 
 echo ""
 echo "3. Reconciling HelmReleases..."
-flux reconcile helmrelease --all -n antigravity-dev
+for release in postgresql odoo n8n ollama pgadmin monitoring; do
+    flux reconcile helmrelease "${release}" -n antigravity-dev 2>/dev/null || true
+done
 
 echo ""
 echo "=========================================="
