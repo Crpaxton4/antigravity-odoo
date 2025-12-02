@@ -4,7 +4,7 @@
 
 set -e
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SCRIPT_DIR="./.devops/kube/"
 
 echo "=========================================="
 echo "Antigravity Odoo - Kubernetes Deployment"
@@ -14,7 +14,7 @@ echo ""
 
 # Check if we're in the right directory
 if [ ! -f "$SCRIPT_DIR/02-setup-cluster.sh" ]; then
-    echo "❌ Error: Script must be run from .devops/kube directory"
+    echo "❌ Error: Script must be present in .devops/kube directory"
     exit 1
 fi
 
@@ -34,11 +34,11 @@ if [ "$CONFIRM" != "yes" ]; then
     echo "Deployment cancelled."
     echo ""
     echo "To run steps manually:"
-    echo "  ./02-setup-cluster.sh"
-    echo "  ./03-update-secrets.sh"
-    echo "  ./04-update-git-repo.sh"
-    echo "  ./05-install-flux.sh"
-    echo "  ./06-deploy.sh"
+    echo "  ./.devops/kube/02-setup-cluster.sh"
+    echo "  ./.devops/kube/03-update-secrets.sh"
+    echo "  ./.devops/kube/04-update-git-repo.sh"
+    echo "  ./.devops/kube/05-install-flux.sh"
+    echo "  ./.devops/kube/06-deploy.sh"
     exit 0
 fi
 
@@ -46,27 +46,33 @@ echo ""
 echo "=========================================="
 echo "Step 1/5: Setting up cluster"
 echo "=========================================="
-./02-setup-cluster.sh
+./.devops/kube/02-setup-cluster.sh
 
 echo ""
 echo "=========================================="
 echo "Step 2/5: Updating secrets"
 echo "=========================================="
-# Auto-generate passwords by passing 'y'
-echo "y" | ./03-update-secrets.sh
+# Check if .env exists, if so use it
+if [ -f "../../.env" ] || [ -f ".env" ]; then
+    echo "Found .env file, creating secrets..."
+    ./.devops/kube/00-create-secrets-from-env.sh
+else
+    # Auto-generate passwords by passing 'y'
+    echo "y" | ./.devops/kube/03-update-secrets.sh
+fi
 
 echo ""
 echo "=========================================="
 echo "Step 3/5: Updating Git repository"
 echo "=========================================="
 read -p "Enter your Git repository URL: " GIT_URL
-echo "$GIT_URL" | ./04-update-git-repo.sh
+echo "$GIT_URL" | ./.devops/kube/04-update-git-repo.sh
 
 echo ""
 echo "=========================================="
-echo "Step 4/5: Installing Flux"
+echo "Step 4/5: Installing Flux CD"
 echo "=========================================="
-./05-install-flux.sh
+./.devops/kube/05-install-flux.sh
 
 echo ""
 echo "⚠️  IMPORTANT: Start minikube tunnel in a separate terminal NOW!"
@@ -78,7 +84,7 @@ echo ""
 echo "=========================================="
 echo "Step 5/5: Deploying services"
 echo "=========================================="
-./06-deploy.sh
+./.devops/kube/06-deploy.sh
 
 echo ""
 echo "=========================================="
@@ -88,10 +94,10 @@ echo ""
 echo "Next steps:"
 echo ""
 echo "1. Wait for pods to be ready (5-10 minutes):"
-echo "   ./08-health-check.sh"
+echo "   ./.devops/kube/08-health-check.sh"
 echo ""
 echo "2. Access services:"
-echo "   ./07-access-services.sh"
+echo "   ./.devops/kube/07-access-services.sh"
 echo ""
 echo "3. Monitor deployment:"
 echo "   kubectl get pods -n antigravity-dev -w"

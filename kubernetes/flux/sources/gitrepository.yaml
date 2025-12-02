@@ -6,7 +6,7 @@ metadata:
   namespace: flux-system
 spec:
   interval: 1m0s
-  url: https://github.com/YOUR_USERNAME/antigravity-odoo  # UPDATE THIS
+  url: https://github.com/Crpaxton4/antigravity-odoo.git
   ref:
     branch: main
   # For private repos, create a secret:

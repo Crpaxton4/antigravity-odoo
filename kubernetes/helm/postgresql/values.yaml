@@ -13,6 +13,10 @@ postgresql:
   user: postgres
   database: postgres
   
+# Existing secret for passwords (optional)
+# If set, the chart will not create a secret and will use this one instead
+existingSecret: ""
+  
 # Database users (passwords will be in secrets)
 databases:
   odoo:

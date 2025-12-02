@@ -5,9 +5,11 @@
 helm/*/charts/
 
 # Secrets (never commit!)
-*secret*.yaml
-*Secret*.yaml
-!*sealed-secret*.yaml  # Sealed secrets are safe
+secrets.yaml
+.env
+.secrets.txt
+*-secret.yaml
+!templates/secret.yaml
 
 # Local values overrides
 *-local.yaml

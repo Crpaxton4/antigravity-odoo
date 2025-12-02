@@ -1,0 +1,32 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: odoo
+  namespace: antigravity-prod
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: ./kubernetes/helm/odoo
+      sourceRef:
+        kind: GitRepository
+        name: antigravity-odoo
+        namespace: flux-system
+  dependsOn:
+    - name: postgresql
+      namespace: antigravity-prod
+  values:
+    replicaCount: 3
+    resources:
+      requests:
+        cpu: 1000m
+        memory: 2Gi
+      limits:
+        cpu: 2000m
+        memory: 4Gi
+    odoo:
+      database:
+        password: "prod-odoo-changeme"
+      debug:
+        enabled: false

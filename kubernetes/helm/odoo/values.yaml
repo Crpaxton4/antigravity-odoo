@@ -15,6 +15,11 @@ odoo:
     port: 5432
     name: odoo_db
     user: odoo_user
+    password: changeme
+
+# Existing secret for passwords (optional)
+# If set, the chart will not create a secret and will use this one instead
+existingSecret: ""
   debug:
     enabled: true
     port: 5678  # debugpy port

@@ -1,0 +1,25 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Attach to Odoo",
+            "type": "python",
+            "request": "attach",
+            "connect": {
+                "host": "localhost",
+                "port": 5678
+            },
+            "pathMappings": [
+                {
+                    "localRoot": "${workspaceFolder}",
+                    "remoteRoot": "/mnt/extra-addons"
+                },
+                {
+                    "localRoot": "${workspaceFolder}/odoo",
+                    "remoteRoot": "/usr/lib/python3/dist-packages/odoo"
+                }
+            ],
+            "justMyCode": false
+        }
+    ]
+}

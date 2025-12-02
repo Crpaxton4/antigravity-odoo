@@ -1,0 +1,27 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: postgresql
+  namespace: antigravity-staging
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: ./kubernetes/helm/postgresql
+      sourceRef:
+        kind: GitRepository
+        name: antigravity-odoo
+        namespace: flux-system
+  values:
+    replicaCount: 1
+    postgresql:
+      postgresPassword: "staging-changeme"
+      adminPassword: "staging-admin-changeme"
+    databases:
+      odoo:
+        password: "staging-odoo-changeme"
+      n8n:
+        password: "staging-n8n-changeme"
+      grafana:
+        password: "staging-grafana-changeme"

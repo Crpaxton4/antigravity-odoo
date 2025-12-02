@@ -1,0 +1,87 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: ollama
+  namespace: antigravity-prod
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: ./kubernetes/helm/ollama
+      sourceRef:
+        kind: GitRepository
+        name: antigravity-odoo
+        namespace: flux-system
+  values:
+    replicaCount: 1
+    resources:
+      requests:
+        cpu: 4000m
+        memory: 8Gi
+      limits:
+        cpu: 8000m
+        memory: 16Gi
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: pgadmin
+  namespace: antigravity-prod
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: ./kubernetes/helm/pgadmin
+      sourceRef:
+        kind: GitRepository
+        name: antigravity-odoo
+        namespace: flux-system
+  dependsOn:
+    - name: postgresql
+      namespace: antigravity-prod
+  values:
+    pgadmin:
+      password: "prod-admin-changeme"
+    resources:
+      requests:
+        cpu: 200m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: monitoring
+  namespace: antigravity-prod
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: ./kubernetes/helm/monitoring
+      sourceRef:
+        kind: GitRepository
+        name: antigravity-odoo
+        namespace: flux-system
+  dependsOn:
+    - name: postgresql
+      namespace: antigravity-prod
+  values:
+    grafana:
+      database:
+        password: "prod-grafana-changeme"
+      replicaCount: 2
+      persistence:
+        size: 20Gi
+      resources:
+        limits:
+          memory: 4Gi
+    prometheus:
+      replicaCount: 2
+      persistence:
+        size: 100Gi
+      resources:
+        limits:
+          memory: 8Gi

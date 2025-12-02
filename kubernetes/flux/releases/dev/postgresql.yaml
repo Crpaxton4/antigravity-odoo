@@ -1,5 +1,6 @@
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+# PostgreSQL HelmRelease using external secrets
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: postgresql
@@ -14,15 +15,19 @@ spec:
         name: antigravity-odoo
         namespace: flux-system
   values:
-    # Environment-specific overrides
+    # Use existing secret created from .env
+    existingSecret: postgresql-secrets
+    
+    # Override default values
     replicaCount: 1
-    postgresql:
-      postgresPassword: "dev-changeme"
-      adminPassword: "dev-admin-changeme"
-    databases:
-      odoo:
-        password: "dev-odoo-changeme"
-      n8n:
-        password: "dev-n8n-changeme"
-      grafana:
-        password: "dev-grafana-changeme"
+    
+    persistence:
+      size: 10Gi
+    
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+      limits:
+        cpu: 2000m
+        memory: 4Gi

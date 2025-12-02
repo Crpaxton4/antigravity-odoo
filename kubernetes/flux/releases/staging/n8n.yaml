@@ -1,0 +1,32 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: n8n
+  namespace: antigravity-staging
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: ./kubernetes/helm/n8n
+      sourceRef:
+        kind: GitRepository
+        name: antigravity-odoo
+        namespace: flux-system
+  dependsOn:
+    - name: postgresql
+      namespace: antigravity-staging
+  values:
+    replicaCount: 1
+    resources:
+      requests:
+        cpu: 250m
+        memory: 512Mi
+      limits:
+        cpu: 1000m
+        memory: 1Gi
+    n8n:
+      runners:
+        enabled: true
+      database:
+        password: "staging-n8n-changeme"

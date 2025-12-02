@@ -1,0 +1,12 @@
+# Staging values for Monitoring
+prometheus:
+  replicaCount: 1
+  resources:
+    limits:
+      memory: 2Gi
+
+grafana:
+  replicaCount: 1
+  resources:
+    limits:
+      memory: 1Gi

@@ -1,0 +1,30 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "docker-compose up",
+            "type": "shell",
+            "command": "docker compose up -d",
+            "problemMatcher": []
+        },
+        {
+            "label": "docker-compose down",
+            "type": "shell",
+            "command": "docker compose down",
+            "problemMatcher": []
+        },
+        {
+            "label": "restart odoo",
+            "type": "shell",
+            "command": "docker compose restart odoo",
+            "problemMatcher": []
+        },
+        {
+            "label": "view odoo logs",
+            "type": "shell",
+            "command": "docker compose logs -f odoo",
+            "isBackground": true,
+            "problemMatcher": []
+        }
+    ]
+}

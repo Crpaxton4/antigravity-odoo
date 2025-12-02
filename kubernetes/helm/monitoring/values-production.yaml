@@ -1,0 +1,16 @@
+# Production values for Monitoring
+prometheus:
+  replicaCount: 2
+  persistence:
+    size: 100Gi
+  resources:
+    limits:
+      memory: 8Gi
+
+grafana:
+  replicaCount: 2
+  persistence:
+    size: 20Gi
+  resources:
+    limits:
+      memory: 4Gi

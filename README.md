@@ -1,101 +1,170 @@
-# Consolidated PostgreSQL + Monitoring Stack
+# Antigravity Odoo Stack
 
-This repository now uses a single PostgreSQL instance for both Odoo and n8n, with comprehensive monitoring via Grafana.
+A production-ready Odoo 19.0 stack with PostgreSQL (pgvector), n8n, Ollama, and comprehensive monitoring.
 
-## Architecture
+## 🚀 Deployment Decision Tree
 
-### Database Structure
-- **Single PostgreSQL Instance**: Serves both Odoo and n8n
-- **Isolated Users**: 
-  - `odoo_user`: Access only to `odoo_db` (CREATE, READ, UPDATE - no DROP DATABASE)
-  - `n8n_user`: Access only to `n8n_db` (CREATE, READ, UPDATE - no DROP DATABASE)
-  - `pgadmin`: Superuser for manual administration
+Choose your deployment path based on your needs:
 
-### Monitoring Stack
-- **Grafana**: Visualization and dashboards (http://localhost:3000)
-- **Prometheus**: Metrics collection (http://localhost:9090)
-- **cAdvisor**: Container metrics (http://localhost:8080)
-- **PostgreSQL Exporter**: Database metrics
-- **pgAdmin**: Database administration (http://localhost:5050)
-
-## Services and Ports
-
-| Service | Port | Purpose |
-|---------|------|---------|
-| Odoo | 8069 | ERP system |
-| Odoo Debug | 5678 | VS Code debugger |
-| n8n | 5679 | Workflow automation |
-| Ollama | 11435 | Local LLM |
-| pgAdmin | 5050 | Database admin |
-| Grafana | 3000 | Monitoring dashboards |
-| Prometheus | 9090 | Metrics |
-| cAdvisor | 8080 | Container metrics |
-
-## Environment Variables
-
-Copy `temp.env` to `.env` and update the following:
-
-### Required
-- `POSTGRES_PASSWORD`: Main PostgreSQL superuser password
-- `POSTGRES_ADMIN_PASSWORD`: Admin user password for pgAdmin
-- `POSTGRES_ODOO_PASSWORD`: Odoo database user password
-- `POSTGRES_N8N_PASSWORD`: n8n database user password
-- `PGADMIN_DEFAULT_EMAIL`: pgAdmin login email
-- `PGADMIN_DEFAULT_PASSWORD`: pgAdmin login password
-- `GF_SECURITY_ADMIN_PASSWORD`: Grafana admin password
-- `N8N_ENCRYPTION_KEY`: n8n encryption key (generate with `openssl rand -base64 32`)
-- `N8N_USER_MANAGEMENT_JWT_SECRET`: n8n JWT secret
-
-## Quick Start
-
-1. **Configure environment**:
-   ```bash
-   cp temp.env .env
-   # Edit .env with your secure passwords
-   ```
-
-2. **Start services**:
-   ```bash
-   docker compose up -d
-   ```
-
-3. **Access services**:
-   - Odoo: http://localhost:8069
-   - n8n: http://localhost:5679
-   - pgAdmin: http://localhost:5050
-   - Grafana: http://localhost:3000
-
-## Grafana Dashboards
-
-Import these community dashboards:
-- **Container Monitoring**: Dashboard ID 14282 (cAdvisor)
-- **PostgreSQL**: Dashboard ID 9628
-- **Node Exporter**: Dashboard ID 1860
-
-See `grafana/provisioning/dashboards/README.md` for details.
-
-## Database Access
-
-### Via pgAdmin
-1. Access http://localhost:5050
-2. Login with credentials from `.env`
-3. Server "PostgreSQL Server" is pre-configured
-
-### Via psql
-```bash
-# As admin
-docker exec -it postgres psql -U pgadmin -d postgres
-
-# As Odoo user
-docker exec -it postgres psql -U odoo_user -d odoo_db
-
-# As n8n user
-docker exec -it postgres psql -U n8n_user -d n8n_db
+```mermaid
+graph TD
+    A[Start] --> B{Environment?}
+    B -->|Local Development| C[Docker Compose]
+    B -->|Production / Kubernetes| D[Kubernetes + Flux CD]
+    
+    C --> C1[Quick Start]
+    C --> C2[Full Stack]
+    
+    D --> D1[Local K8s (Minikube)]
+    D --> D2[Cloud K8s]
 ```
 
-## Security Notes
+| Method | Best For | Tools Required |
+|--------|----------|----------------|
+| **Docker Compose** | Rapid development, testing, simple deployments | Docker, Docker Compose |
+| **Kubernetes (Minikube)** | Testing K8s manifests locally | Minikube, kubectl, Helm, Flux |
+| **Kubernetes (Cloud)** | Production, Staging, Scalability | Cloud Provider, kubectl, Helm, Flux |
 
-- Odoo and n8n users **cannot drop databases** (only CREATE, READ, UPDATE)
-- Each user can only access their own database
-- Admin user (`pgadmin`) has full superuser access for manual administration
-- All passwords should be changed from defaults in production
+---
+
+## 🛠️ Technology Stack
+
+- **Core**: Odoo 19.0, PostgreSQL 16 (pgvector), n8n, Ollama
+- **Monitoring**: Prometheus, Grafana, cAdvisor, PostgreSQL Exporter, pgAdmin
+- **Infrastructure**: Docker, Kubernetes, Helm 3, Flux CD
+
+---
+
+## 🐳 Option 1: Docker Compose (Local Development)
+
+### Prerequisites
+- Docker & Docker Compose installed
+
+### Quick Start
+
+1.  **Configure Environment**:
+    ```bash
+    cp .env.example .env
+    # Edit .env with your secure passwords
+    ```
+
+2.  **Start Services**:
+    ```bash
+    docker compose up -d
+    ```
+
+3.  **Access Services**:
+    - **Odoo**: [http://localhost:8069](http://localhost:8069)
+    - **n8n**: [http://localhost:5679](http://localhost:5679)
+    - **pgAdmin**: [http://localhost:5050](http://localhost:5050)
+    - **Grafana**: [http://localhost:3000](http://localhost:3000)
+
+### Database Access
+- **Host**: `postgres` (internal), `localhost` (external if ports mapped)
+- **Port**: `5432`
+- **Users**:
+    - `postgres_admin`: Superuser (renamed from pgadmin)
+    - `odoo_user`: Odoo database owner
+    - `n8n_user`: n8n database owner
+
+---
+
+## ☸️ Option 2: Kubernetes (Production/Staging)
+
+This stack uses **Flux CD** for GitOps-based deployment and **Helm** for package management.
+
+### Prerequisites
+- `kubectl`
+- `helm`
+- `flux` CLI
+- A Kubernetes cluster (Minikube or Cloud)
+
+### Automated Deployment (Minikube)
+
+We provide automated scripts in `.devops/kube/` to streamline the process.
+
+```bash
+cd .devops/kube
+
+# 1. Setup Cluster
+./02-setup-cluster.sh
+
+# 2. Start Tunnel (Separate Terminal)
+minikube tunnel
+
+# 3. Deploy Stack
+./01-deploy-all.sh
+```
+
+### Manual Deployment
+
+1.  **Install Flux**:
+    ```bash
+    .devops/kube/05-install-flux.sh
+    ```
+
+2.  **Create Namespace**:
+    ```bash
+    kubectl apply -f kubernetes/namespaces.yaml
+    ```
+
+3.  **Deploy Services**:
+    ```bash
+    kubectl apply -f kubernetes/flux/releases/dev/
+    ```
+
+### Environments
+- **Dev**: `kubernetes/flux/releases/dev/`
+- **Staging**: `kubernetes/flux/releases/staging/`
+- **Production**: `kubernetes/flux/releases/production/`
+
+To create a new environment:
+```bash
+kubernetes/scripts/create-environment.sh <env-name>
+```
+
+---
+
+## 📊 Monitoring & Observability
+
+### Grafana Dashboards
+Login to Grafana (admin/admin by default) and import these dashboards:
+- **PostgreSQL**: ID 9628
+- **Container Monitoring**: ID 14282
+- **Node Exporter**: ID 1860
+
+### Metrics Endpoints
+- **Prometheus**: [http://localhost:9090](http://localhost:9090)
+- **cAdvisor**: [http://localhost:8080](http://localhost:8080)
+
+---
+
+## 🔒 Security
+
+- **Secrets**: In production, use **Sealed Secrets** or External Secrets Operator. Do not commit raw passwords in Helm values.
+- **Network**: Internal services are isolated. Only expose necessary ports.
+- **Database**: Service users (odoo, n8n) cannot DROP databases. Only `postgres_admin` has superuser privileges.
+
+---
+
+## 📚 Documentation & References
+
+- [Governance & Contribution](docs/GOVERNANCE.md)
+- [Documentation Scheme](docs/DOCUMENTATION_SCHEME.md)
+- [n8n Environment Variables](docs/N8N_ENVIRONMENT_VARIABLES.md)
+
+### Quick Reference Commands
+
+**Flux**:
+```bash
+flux check
+flux get kustomizations
+flux reconcile source git antigravity-odoo
+```
+
+**Kubernetes**:
+```bash
+kubectl get pods -n antigravity-dev
+kubectl logs -f <pod-name> -n antigravity-dev
+kubectl get events -n antigravity-dev --sort-by='.lastTimestamp'
+```

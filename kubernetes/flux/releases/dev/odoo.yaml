@@ -1,5 +1,6 @@
 ---
-apiVersion: helm.toolkit.fluxcd.io/v2beta1
+# Odoo HelmRelease using external secrets
+apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
 metadata:
   name: odoo
@@ -17,9 +18,10 @@ spec:
     - name: postgresql
       namespace: antigravity-dev
   values:
+    # Use existing secret created from .env
+    existingSecret: odoo-secrets
+    
     replicaCount: 1
     odoo:
-      database:
-        password: "dev-odoo-changeme"
       debug:
         enabled: true

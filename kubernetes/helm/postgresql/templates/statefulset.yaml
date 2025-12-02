@@ -43,27 +43,27 @@ spec:
         - name: POSTGRES_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ include "postgresql.fullname" . }}
+              name: {{ .Values.existingSecret | default (include "postgresql.fullname" .) }}
               key: postgres-password
         - name: POSTGRES_ADMIN_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ include "postgresql.fullname" . }}
+              name: {{ .Values.existingSecret | default (include "postgresql.fullname" .) }}
               key: admin-password
         - name: POSTGRES_ODOO_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ include "postgresql.fullname" . }}
+              name: {{ .Values.existingSecret | default (include "postgresql.fullname" .) }}
               key: odoo-password
         - name: POSTGRES_N8N_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ include "postgresql.fullname" . }}
+              name: {{ .Values.existingSecret | default (include "postgresql.fullname" .) }}
               key: n8n-password
         - name: POSTGRES_GRAFANA_PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ include "postgresql.fullname" . }}
+              name: {{ .Values.existingSecret | default (include "postgresql.fullname" .) }}
               key: grafana-password
         - name: PGDATA
           value: /var/lib/postgresql/data/pgdata

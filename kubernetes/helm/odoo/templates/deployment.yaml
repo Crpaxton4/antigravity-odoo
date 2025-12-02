@@ -61,7 +61,7 @@ spec:
         - name: PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ include "odoo.fullname" . }}
+              name: {{ .Values.existingSecret | default (include "odoo.fullname" .) }}
               key: db-password
         - name: DB_NAME
           value: {{ .Values.odoo.database.name | quote }}

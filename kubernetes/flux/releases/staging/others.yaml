@@ -1,0 +1,83 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: ollama
+  namespace: antigravity-staging
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: ./kubernetes/helm/ollama
+      sourceRef:
+        kind: GitRepository
+        name: antigravity-odoo
+        namespace: flux-system
+  values:
+    replicaCount: 1
+    resources:
+      requests:
+        cpu: 2000m
+        memory: 4Gi
+      limits:
+        cpu: 4000m
+        memory: 8Gi
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: pgadmin
+  namespace: antigravity-staging
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: ./kubernetes/helm/pgadmin
+      sourceRef:
+        kind: GitRepository
+        name: antigravity-odoo
+        namespace: flux-system
+  dependsOn:
+    - name: postgresql
+      namespace: antigravity-staging
+  values:
+    pgadmin:
+      password: "staging-admin-changeme"
+    resources:
+      requests:
+        cpu: 100m
+        memory: 256Mi
+      limits:
+        cpu: 500m
+        memory: 512Mi
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: monitoring
+  namespace: antigravity-staging
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: ./kubernetes/helm/monitoring
+      sourceRef:
+        kind: GitRepository
+        name: antigravity-odoo
+        namespace: flux-system
+  dependsOn:
+    - name: postgresql
+      namespace: antigravity-staging
+  values:
+    grafana:
+      database:
+        password: "staging-grafana-changeme"
+      replicaCount: 1
+      resources:
+        limits:
+          memory: 1Gi
+    prometheus:
+      replicaCount: 1
+      resources:
+        limits:
+          memory: 2Gi

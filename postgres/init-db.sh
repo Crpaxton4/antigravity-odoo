@@ -14,7 +14,7 @@ set -e
 echo "Creating admin user..."
 psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
     -- Create admin user with full superuser privileges
-    CREATE USER pgadmin WITH PASSWORD '${POSTGRES_ADMIN_PASSWORD}' SUPERUSER CREATEDB CREATEROLE;
+    CREATE USER postgres_admin WITH PASSWORD '${POSTGRES_ADMIN_PASSWORD}' SUPERUSER CREATEDB CREATEROLE;
 EOSQL
 
 echo "Creating Odoo user and database..."
@@ -23,7 +23,7 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     CREATE USER odoo_user WITH PASSWORD '${POSTGRES_ODOO_PASSWORD}' CREATEDB;
     
     -- Create Odoo database owned by ADMIN to prevent deletion by odoo_user
-    CREATE DATABASE odoo_db OWNER pgadmin;
+    CREATE DATABASE odoo_db OWNER postgres_admin;
     
     -- Grant privileges to Odoo user
     GRANT ALL PRIVILEGES ON DATABASE odoo_db TO odoo_user;
@@ -40,7 +40,7 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     CREATE USER n8n_user WITH PASSWORD '${POSTGRES_N8N_PASSWORD}' CREATEDB;
     
     -- Create n8n database owned by ADMIN to prevent deletion
-    CREATE DATABASE n8n_db OWNER pgadmin;
+    CREATE DATABASE n8n_db OWNER postgres_admin;
     
     -- Grant privileges to n8n user
     GRANT ALL PRIVILEGES ON DATABASE n8n_db TO n8n_user;
@@ -62,7 +62,7 @@ psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-E
     CREATE USER grafana_user WITH PASSWORD '${POSTGRES_GRAFANA_PASSWORD}' CREATEDB;
     
     -- Create Grafana database owned by ADMIN to prevent deletion
-    CREATE DATABASE grafana_db OWNER pgadmin;
+    CREATE DATABASE grafana_db OWNER postgres_admin;
     
     -- Grant privileges to Grafana user
     GRANT ALL PRIVILEGES ON DATABASE grafana_db TO grafana_user;
@@ -77,5 +77,5 @@ EOSQL
 
 echo "Database initialization complete!"
 echo "Created databases: odoo_db, n8n_db (with vector), grafana_db"
-echo "Created users: pgadmin (superuser), odoo_user, n8n_user, grafana_user"
-echo "Security: Main databases are owned by pgadmin to prevent deletion by service users."
+echo "Created users: postgres_admin (superuser), odoo_user, n8n_user, grafana_user"
+echo "Security: Main databases are owned by postgres_admin to prevent deletion by service users."

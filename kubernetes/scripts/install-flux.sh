@@ -3,34 +3,47 @@
 
 set -e
 
+# Function to print status
+log_info() {
+    echo -e "\033[0;34m[INFO]\033[0m $1"
+}
+
+log_success() {
+    echo -e "\033[0;32m[SUCCESS]\033[0m $1"
+}
+
+log_error() {
+    echo -e "\033[0;31m[ERROR]\033[0m $1"
+}
+
 echo "Installing Flux CD..."
 
 # Check if flux CLI is installed
-if ! command -v flux &gt; /dev/null; then
-    echo "Flux CLI not found. Please install it first:"
+if ! command -v flux &> /dev/null; then
+    log_error "Flux CLI not found. Please install it first:"
     echo "  brew install fluxcd/tap/flux"
     echo "  or visit: https://fluxcd.io/flux/installation/"
     exit 1
 fi
 
 # Check if kubectl is available
-if ! command -v kubectl &gt; /dev/null; then
-    echo "kubectl not found. Please install kubectl first."
+if ! command -v kubectl &> /dev/null; then
+    log_error "kubectl not found. Please install kubectl first."
     exit 1
 fi
 
-echo "Pre-flight checks..."
+log_info "Pre-flight checks..."
 flux check --pre
 
-echo "Installing Flux components..."
+log_info "Installing Flux components..."
 flux install
 
-echo "Waiting for Flux to be ready..."
+log_info "Waiting for Flux to be ready..."
 kubectl wait --for=condition=ready pod -l app=source-controller -n flux-system --timeout=300s
 kubectl wait --for=condition=ready pod -l app=kustomize-controller -n flux-system --timeout=300s
 kubectl wait --for=condition=ready pod -l app=helm-controller -n flux-system --timeout=300s
 
-echo "✓ Flux installed successfully!"
+log_success "Flux installed successfully!"
 
 echo ""
 echo "Next steps:"

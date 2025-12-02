@@ -22,7 +22,7 @@ data:
     echo "Creating admin user..."
     psql -v ON_ERROR_STOP=1 --username "$POSTGRES_USER" --dbname "$POSTGRES_DB" <<-EOSQL
         -- Create admin user with full superuser privileges
-        CREATE USER pgadmin WITH PASSWORD '${POSTGRES_ADMIN_PASSWORD}' SUPERUSER CREATEDB CREATEROLE;
+        CREATE USER postgres_admin WITH PASSWORD '${POSTGRES_ADMIN_PASSWORD}' SUPERUSER CREATEDB CREATEROLE;
     EOSQL
     
     echo "Creating Odoo user and database..."
@@ -31,7 +31,7 @@ data:
         CREATE USER {{ .Values.databases.odoo.user }} WITH PASSWORD '${POSTGRES_ODOO_PASSWORD}' CREATEDB;
         
         -- Create Odoo database owned by ADMIN to prevent deletion by odoo_user
-        CREATE DATABASE {{ .Values.databases.odoo.name }} OWNER pgadmin;
+        CREATE DATABASE {{ .Values.databases.odoo.name }} OWNER postgres_admin;
         
         -- Grant privileges to Odoo user
         GRANT ALL PRIVILEGES ON DATABASE {{ .Values.databases.odoo.name }} TO {{ .Values.databases.odoo.user }};
@@ -48,7 +48,7 @@ data:
         CREATE USER {{ .Values.databases.n8n.user }} WITH PASSWORD '${POSTGRES_N8N_PASSWORD}' CREATEDB;
         
         -- Create n8n database owned by ADMIN to prevent deletion
-        CREATE DATABASE {{ .Values.databases.n8n.name }} OWNER pgadmin;
+        CREATE DATABASE {{ .Values.databases.n8n.name }} OWNER postgres_admin;
         
         -- Grant privileges to n8n user
         GRANT ALL PRIVILEGES ON DATABASE {{ .Values.databases.n8n.name }} TO {{ .Values.databases.n8n.user }};
@@ -70,7 +70,7 @@ data:
         CREATE USER {{ .Values.databases.grafana.user }} WITH PASSWORD '${POSTGRES_GRAFANA_PASSWORD}' CREATEDB;
         
         -- Create Grafana database owned by ADMIN to prevent deletion
-        CREATE DATABASE {{ .Values.databases.grafana.name }} OWNER pgadmin;
+        CREATE DATABASE {{ .Values.databases.grafana.name }} OWNER postgres_admin;
         
         -- Grant privileges to Grafana user
         GRANT ALL PRIVILEGES ON DATABASE {{ .Values.databases.grafana.name }} TO {{ .Values.databases.grafana.user }};
@@ -85,5 +85,5 @@ data:
     
     echo "Database initialization complete!"
     echo "Created databases: {{ .Values.databases.odoo.name }}, {{ .Values.databases.n8n.name }}, {{ .Values.databases.grafana.name }}"
-    echo "Created users: pgadmin (superuser), {{ .Values.databases.odoo.user }}, {{ .Values.databases.n8n.user }}, {{ .Values.databases.grafana.user }}"
-    echo "Security: Main databases are owned by pgadmin to prevent deletion by service users."
+    echo "Created users: postgres_admin (superuser), {{ .Values.databases.odoo.user }}, {{ .Values.databases.n8n.user }}, {{ .Values.databases.grafana.user }}"
+    echo "Security: Main databases are owned by postgres_admin to prevent deletion by service users."

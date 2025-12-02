@@ -1,0 +1,36 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: postgresql
+  namespace: antigravity-prod
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: ./kubernetes/helm/postgresql
+      sourceRef:
+        kind: GitRepository
+        name: antigravity-odoo
+        namespace: flux-system
+  values:
+    replicaCount: 3
+    postgresql:
+      postgresPassword: "prod-changeme"
+      adminPassword: "prod-admin-changeme"
+    databases:
+      odoo:
+        password: "prod-odoo-changeme"
+      n8n:
+        password: "prod-n8n-changeme"
+      grafana:
+        password: "prod-grafana-changeme"
+    persistence:
+      size: 100Gi
+    resources:
+      requests:
+        cpu: 1000m
+        memory: 2Gi
+      limits:
+        cpu: 4000m
+        memory: 8Gi

@@ -17,7 +17,7 @@ if ! command -v kubectl &> /dev/null; then
 fi
 
 if ! command -v flux &> /dev/null; then
-    echo "❌ Flux not found. Run ./05-install-flux.sh first"
+    echo "❌ Flux not found"
     exit 1
 fi
 
@@ -32,12 +32,22 @@ echo "Cluster: $(kubectl config current-context)"
 echo "Namespace: $NAMESPACE"
 echo ""
 
-# Create namespace
-echo "Creating namespace $NAMESPACE..."
-kubectl create namespace "$NAMESPACE" --dry-run=client -o yaml | kubectl apply -f -
-kubectl label namespace "$NAMESPACE" environment=development managed-by=flux --overwrite
+# Create namespaces
+echo "Creating namespaces..."
+kubectl apply -f kubernetes/namespaces.yaml
 
-echo "✓ Namespace created"
+echo "✓ Namespaces created"
+echo ""
+
+# Check if Flux CRDs are installed
+echo "Checking Flux CRDs..."
+if ! kubectl get crd gitrepositories.source.toolkit.fluxcd.io &> /dev/null; then
+    echo "❌ Flux CRDs not found!"
+    echo "   Please run ./05-install-flux.sh first to install Flux."
+    exit 1
+fi
+
+echo "✓ Flux CRDs found"
 echo ""
 
 # Apply GitRepository source
@@ -49,7 +59,7 @@ echo ""
 
 # Wait for GitRepository to be ready
 echo "Waiting for Git source to be ready..."
-kubectl wait --for=condition=ready gitrepository/antigravity-odoo -n flux-system --timeout=60s || true
+kubectl wait --for=condition=ready gitrepository/antigravity-odoo -n flux-system --timeout=120s || true
 
 echo ""
 
@@ -106,5 +116,5 @@ echo "1. Wait for all pods to be ready (may take 5-10 minutes)"
 echo "   kubectl get pods -n $NAMESPACE -w"
 echo ""
 echo "2. Once ready, access services:"
-echo "   ./07-access-services.sh"
+echo "   ./.devops/kube/07-access-services.sh"
 echo ""

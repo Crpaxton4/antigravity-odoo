@@ -178,7 +178,7 @@ services:
     hostname: postgres-exporter
     restart: unless-stopped
     environment:
-      - DATA_SOURCE_NAME=postgresql://pgadmin:${POSTGRES_ADMIN_PASSWORD}@postgres:5432/postgres?sslmode=disable
+      - DATA_SOURCE_NAME=postgresql://postgres_admin:${POSTGRES_ADMIN_PASSWORD}@postgres:5432/postgres?sslmode=disable
     networks:
       - internal
     depends_on:

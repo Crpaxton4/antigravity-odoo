@@ -37,9 +37,22 @@ echo ""
 # Check if cluster already exists
 if minikube status &> /dev/null; then
     echo "⚠️  Minikube cluster already exists."
-    read -p "Do you want to delete and recreate? (y/N): " -n 1 -r
-    echo
-    if [[ $REPLY =~ ^[Yy]$ ]]; then
+    
+    # Check for --force argument or prompt
+    if [ "$1" == "--force" ]; then
+        echo "Force flag detected. Recreating cluster..."
+        RECREATE="y"
+    else
+        read -p "Do you want to delete and recreate? (y/N): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            RECREATE="y"
+        else
+            RECREATE="n"
+        fi
+    fi
+
+    if [ "$RECREATE" == "y" ]; then
         echo "Deleting existing cluster..."
         minikube delete
     else
@@ -87,6 +100,5 @@ echo "   minikube tunnel"
 echo "   (Run this in a separate terminal and keep it running)"
 echo ""
 echo "2. Continue with deployment:"
-echo "   cd .devops/kube"
-echo "   ./03-update-secrets.sh"
+echo "   ./.devops/kube/03-update-secrets.sh"
 echo ""
