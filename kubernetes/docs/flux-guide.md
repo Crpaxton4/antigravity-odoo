@@ -133,8 +133,7 @@ flux logs --all-namespaces --follow
 flux logs --kind=HelmRelease --name=odoo --namespace=antigravity-dev
 ```
 
-##Making Changes
-
+## Making Changes
 ### Option 1: Update Values in HelmRelease
 
 1. Edit `kubernetes/flux/releases/dev/odoo.yaml`:

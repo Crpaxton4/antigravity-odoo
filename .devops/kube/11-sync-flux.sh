@@ -4,6 +4,10 @@
 
 set -e
 
+# Define charts and releases to reconcile
+CHARTS="postgresql odoo n8n ollama pgadmin monitoring"
+RELEASES="postgresql odoo n8n ollama pgadmin monitoring"
+
 echo "=========================================="
 echo "Syncing Flux with Git Repository"
 echo "=========================================="
@@ -15,14 +19,14 @@ flux reconcile source git antigravity-odoo --timeout 2m
 
 echo ""
 echo "2. Reconciling HelmCharts..."
-for chart in postgresql odoo n8n ollama pgadmin monitoring; do
+for chart in ${CHARTS}; do
     echo "  - Reconciling ${chart}..."
     flux reconcile source chart "antigravity-dev-${chart}" -n flux-system 2>/dev/null || true
 done
 
 echo ""
 echo "3. Reconciling HelmReleases..."
-for release in postgresql odoo n8n ollama pgadmin monitoring; do
+for release in ${RELEASES}; do
     flux reconcile helmrelease "${release}" -n antigravity-dev 2>/dev/null || true
 done
 

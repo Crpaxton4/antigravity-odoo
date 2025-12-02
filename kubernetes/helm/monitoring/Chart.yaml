@@ -1,7 +1,44 @@
 apiVersion: v2
 name: monitoring
-description: Monitoring Stack (Prometheus, Grafana, Exporters)
+description: Monitoring Stack (Prometheus, Grafana, Exporters) for Antigravity Odoo
 type: application
 version: 1.0.0
-appVersion: "latest"
-dependencies: []
+appVersion: "1.0.0"  # Monitoring stack version - tracks chart version for this composite application
+
+maintainers:
+  - name: DevOps Team
+    email: devops@example.com
+
+home: https://github.com/Crpaxton4/antigravity-odoo
+
+sources:
+  - https://github.com/Crpaxton4/antigravity-odoo
+  - https://github.com/prometheus/prometheus
+  - https://github.com/grafana/grafana
+  - https://github.com/prometheus-community/postgres_exporter
+
+keywords:
+  - monitoring
+  - prometheus
+  - grafana
+  - metrics
+  - observability
+  - postgres-exporter
+  - cadvisor
+
+icon: https://prometheus.io/assets/prometheus_logo_grey.svg
+
+dependencies:
+  - name: prometheus
+    version: "25.8.0"
+    repository: https://prometheus-community.github.io/helm-charts
+    condition: prometheus.enabled
+  - name: grafana
+    version: "7.3.0"
+    repository: https://grafana.github.io/helm-charts
+    condition: grafana.enabled
+  - name: prometheus-postgres-exporter
+    version: "5.0.1"
+    repository: https://prometheus-community.github.io/helm-charts
+    condition: postgresExporter.enabled
+    alias: postgresExporter

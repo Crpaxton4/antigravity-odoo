@@ -27,6 +27,8 @@ spec:
         memory: 2Gi
     odoo:
       database:
-        password: "staging-odoo-changeme"
+        passwordSecretRef:
+          name: staging-odoo-db-secret
+          key: password
       debug:
-        enabled: true
+        enabled: false

@@ -66,7 +66,7 @@ echo "=========================================="
 echo "Step 3/5: Updating Git repository"
 echo "=========================================="
 read -p "Enter your Git repository URL: " GIT_URL
-echo "$GIT_URL" | ./.devops/kube/04-update-git-repo.sh
+./.devops/kube/04-update-git-repo.sh "$GIT_URL"
 
 echo ""
 echo "=========================================="

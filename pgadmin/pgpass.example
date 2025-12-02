@@ -1,1 +1,10 @@
-postgres:5432:*:pgadmin:${POSTGRES_ADMIN_PASSWORD}
+# PostgreSQL Password File Template
+# This is a TEMPLATE file showing the format for pgAdmin password authentication
+#
+# IMPORTANT: This file is NOT used directly by Docker Compose
+# - In Docker: The entrypoint script generates the actual pgpass file at runtime
+# - Locally: Use setup-pgpass.sh to create a working pgpass file
+#
+# Format: hostname:port:database:username:password
+# For local development, replace CHANGEME with your actual password
+postgres:5432:*:pgadmin:CHANGEME

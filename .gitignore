@@ -48,6 +48,9 @@ docker-compose.override.yml
 .secrets.txt
 *.secrets.*
 
+# pgAdmin credentials
+pgadmin/pgpass
+
 # Backup files
 *.bak
 *.backup

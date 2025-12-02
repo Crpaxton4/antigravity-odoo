@@ -4,3 +4,25 @@ description: PostgreSQL database with pgvector for Odoo, n8n, and Grafana
 type: application
 version: 1.0.0
 appVersion: "16"
+
+maintainers:
+  - name: DevOps Team
+    email: devops@example.com
+
+home: https://github.com/Crpaxton4/antigravity-odoo
+
+sources:
+  - https://github.com/Crpaxton4/antigravity-odoo
+  - https://www.postgresql.org/
+  - https://github.com/pgvector/pgvector
+
+keywords:
+  - postgresql
+  - database
+  - pgvector
+  - odoo
+  - n8n
+  - grafana
+  - sql
+
+icon: https://www.postgresql.org/media/img/about/press/elephant.png

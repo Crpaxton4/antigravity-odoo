@@ -42,7 +42,9 @@ spec:
       namespace: antigravity-prod
   values:
     pgadmin:
-      password: "prod-admin-changeme"
+      passwordSecretRef:
+        name: production-pgadmin-secret
+        key: password
     resources:
       requests:
         cpu: 200m
@@ -71,7 +73,9 @@ spec:
   values:
     grafana:
       database:
-        password: "prod-grafana-changeme"
+        passwordSecretRef:
+          name: production-grafana-db-secret
+          key: password
       replicaCount: 2
       persistence:
         size: 20Gi

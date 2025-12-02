@@ -42,9 +42,32 @@ if minikube status &> /dev/null; then
         echo "✓ Minikube cluster is already running"
         
         # Check if it matches desired configuration
-        CURRENT_CPUS=$(kubectl get node minikube -o jsonpath='{.status.capacity.cpu}' 2>/dev/null || echo "0")
-        CURRENT_MEMORY=$(kubectl get node minikube -o jsonpath='{.status.capacity.memory}' 2>/dev/null | sed 's/Ki//' || echo "0")
-        CURRENT_MEMORY_MB=$((CURRENT_MEMORY / 1024))
+        # Retrieve CPU capacity with proper error handling
+        if CURRENT_CPUS=$(kubectl get node minikube -o jsonpath='{.status.capacity.cpu}' 2>/dev/null); then
+            # Validate numeric value
+            if ! [[ "$CURRENT_CPUS" =~ ^[0-9]+$ ]]; then
+                echo "⚠️  Warning: Retrieved non-numeric CPU value, defaulting to 0" >&2
+                CURRENT_CPUS=0
+            fi
+        else
+            echo "⚠️  Warning: Failed to retrieve CPU capacity (kubectl error or cluster unreachable), defaulting to 0" >&2
+            CURRENT_CPUS=0
+        fi
+        
+        # Retrieve memory capacity with proper error handling
+        if CURRENT_MEMORY_RAW=$(kubectl get node minikube -o jsonpath='{.status.capacity.memory}' 2>/dev/null); then
+            # Strip Ki suffix and validate
+            CURRENT_MEMORY="${CURRENT_MEMORY_RAW//Ki/}"
+            if [[ "$CURRENT_MEMORY" =~ ^[0-9]+$ ]]; then
+                CURRENT_MEMORY_MB=$((CURRENT_MEMORY / 1024))
+            else
+                echo "⚠️  Warning: Retrieved non-numeric memory value, defaulting to 0" >&2
+                CURRENT_MEMORY_MB=0
+            fi
+        else
+            echo "⚠️  Warning: Failed to retrieve memory capacity (kubectl error or cluster unreachable), defaulting to 0" >&2
+            CURRENT_MEMORY_MB=0
+        fi
         
         echo ""
         echo "Current cluster configuration:"

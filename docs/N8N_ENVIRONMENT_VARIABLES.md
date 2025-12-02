@@ -72,9 +72,9 @@ Enables task runners for better performance. Will be default in future versions.
 
 ### Security Enhancements
 ```bash
-N8N_BLOCK_ENV_ACCESS_IN_NODE=false
+N8N_BLOCK_ENV_ACCESS_IN_NODE=true
 ```
-Controls whether Code Node can access environment variables. Set to `true` for enhanced security.
+Blocks Code Node from accessing environment variables. Setting this to `true` is **recommended for enhanced security** to prevent accidental or malicious exposure of sensitive environment variables in user-provided code.
 
 ```bash
 N8N_GIT_NODE_DISABLE_BARE_REPOS=true

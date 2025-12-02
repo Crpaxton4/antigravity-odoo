@@ -5,19 +5,34 @@ metadata:
   name: odoo
   namespace: antigravity-prod
 spec:
-  interval: 5m
+  interval: 15m
   chart:
     spec:
       chart: ./kubernetes/helm/odoo
+      version: "1.0.0"  # Pin to explicit chart version for production stability
       sourceRef:
         kind: GitRepository
         name: antigravity-odoo
         namespace: flux-system
+        # For production, consider pinning to a specific tag or commit SHA:
+        # ref:
+        #   tag: v1.0.0
+        #   # OR commit: abc123def456...
   dependsOn:
     - name: postgresql
       namespace: antigravity-prod
+  # IMPORTANT: This HelmRelease requires the Secret 'production-odoo-db-secret' to exist
+  # in the antigravity-prod namespace with key 'password' before deployment.
+  # Create the Secret using: .devops/kube/00-create-secrets-from-env.sh antigravity-prod
+  # Or use external secret management (Sealed Secrets, External Secrets Operator, etc.)
+  # Alert on reconciliation failures
+  alerts:
+    - name: odoo-production-alerts
+      namespace: flux-system
   values:
     replicaCount: 3
+    
+    # Resource configuration with explicit requests/limits
     resources:
       requests:
         cpu: 1000m
@@ -25,8 +40,129 @@ spec:
       limits:
         cpu: 2000m
         memory: 4Gi
+    
+    # Health probes for production reliability
+    livenessProbe:
+      enabled: true
+      httpGet:
+        path: /web/health
+        port: 8069
+      initialDelaySeconds: 30
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+    
+    readinessProbe:
+      enabled: true
+      httpGet:
+        path: /web/health
+        port: 8069
+      initialDelaySeconds: 10
+      periodSeconds: 5
+      timeoutSeconds: 3
+      failureThreshold: 2
+    
+    startupProbe:
+      enabled: true
+      httpGet:
+        path: /web/health
+        port: 8069
+      initialDelaySeconds: 15
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 20
+    
+    # Security context for least-privilege execution
+    podSecurityContext:
+      runAsNonRoot: true
+      runAsUser: 1000
+      fsGroup: 1000
+      seccompProfile:
+        type: RuntimeDefault
+    
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+          - ALL
+      readOnlyRootFilesystem: false  # Odoo requires write access to session storage
+    
+    # ServiceAccount with minimal RBAC
+    serviceAccount:
+      create: true
+      name: odoo-production
+      annotations:
+        description: "Odoo production service account with minimal permissions"
+    
+    # Priority class for production workloads
+    priorityClassName: system-cluster-critical
+    
+    # Pod Disruption Budget for high availability
+    podDisruptionBudget:
+      enabled: true
+      minAvailable: 2
+    
+    # Prometheus monitoring annotations
+    podAnnotations:
+      prometheus.io/scrape: "true"
+      prometheus.io/port: "8069"
+      prometheus.io/path: "/metrics"
+    
+    # Network Policy for security isolation
+    networkPolicy:
+      enabled: true
+      policyTypes:
+        - Ingress
+        - Egress
+      ingress:
+        - from:
+            - namespaceSelector:
+                matchLabels:
+                  name: ingress-nginx
+          ports:
+            - protocol: TCP
+              port: 8069
+        - from:
+            - podSelector:
+                matchLabels:
+                  app: prometheus
+          ports:
+            - protocol: TCP
+              port: 8069
+      egress:
+        # Allow DNS
+        - to:
+            - namespaceSelector: {}
+              podSelector:
+                matchLabels:
+                  k8s-app: kube-dns
+          ports:
+            - protocol: UDP
+              port: 53
+        # Allow PostgreSQL connection
+        - to:
+            - podSelector:
+                matchLabels:
+                  app: postgresql
+          ports:
+            - protocol: TCP
+              port: 5432
+        # Allow HTTPS for external integrations
+        - to:
+            - namespaceSelector: {}
+          ports:
+            - protocol: TCP
+              port: 443
+    
+    # Odoo-specific configuration
     odoo:
       database:
-        password: "prod-odoo-changeme"
+        # References external Secret: production-odoo-db-secret
+        # Must exist in antigravity-prod namespace before this HelmRelease reconciles
+        # Secret must contain key 'password' with the Odoo database password
+        # Create via: .devops/kube/00-create-secrets-from-env.sh antigravity-prod
+        passwordSecretRef:
+          name: production-odoo-db-secret
+          key: password
       debug:
         enabled: false

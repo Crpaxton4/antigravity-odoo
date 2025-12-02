@@ -1,6 +1,12 @@
 # Production values for pgAdmin
 replicaCount: 1
 
+# Image configuration
+image:
+  tag: "latest"
+  pullPolicy: IfNotPresent
+
+# Resource limits for production environment
 resources:
   requests:
     cpu: 200m
@@ -8,3 +14,119 @@ resources:
   limits:
     cpu: 1000m
     memory: 1Gi
+
+# Persistent storage for pgAdmin configuration and session data
+persistence:
+  enabled: true
+  size: 10Gi
+  accessMode: ReadWriteOnce
+  storageClass: ""
+  # existingClaim: ""
+
+# Security context for least-privilege execution
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 5050
+  fsGroup: 5050
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: false  # pgAdmin requires write access to temp dirs
+  allowPrivilegeEscalation: false
+
+# Pod Disruption Budget to maintain availability during updates
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+# Pod anti-affinity for high availability (optional with single replica)
+# Useful if scaling to multiple replicas in future
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - pgadmin
+          topologyKey: kubernetes.io/hostname
+
+# Database connection configuration
+# Passwords should be provided via Secret references
+env:
+  - name: PGADMIN_DEFAULT_EMAIL
+    value: "admin@production.local"
+  - name: PGADMIN_DEFAULT_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: production-pgadmin-secret
+        key: admin-password
+  - name: POSTGRES_ADMIN_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: production-postgres-secret
+        key: admin-password
+
+# Service configuration
+# Note: pgAdmin 4 (dpage/pgadmin4 image) listens on port 80 by default
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 80
+
+# Ingress configuration for production environment
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    # Rate limiting for security
+    nginx.ingress.kubernetes.io/limit-rps: "10"
+  hosts:
+    - host: pgadmin.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: pgadmin-production-tls
+      hosts:
+        - pgadmin.example.com
+
+# Network Policy for additional security (optional)
+# Restricts ingress/egress to necessary services only
+networkPolicy:
+  enabled: true
+  policyTypes:
+    - Ingress
+    - Egress
+  ingress:
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              name: ingress-nginx
+      ports:
+        - protocol: TCP
+          port: 80
+  egress:
+    # Allow DNS
+    - to:
+        - namespaceSelector: {}
+          podSelector:
+            matchLabels:
+              k8s-app: kube-dns
+      ports:
+        - protocol: UDP
+          port: 53
+    # Allow PostgreSQL connection
+    - to:
+        - podSelector:
+            matchLabels:
+              app: postgresql
+      ports:
+        - protocol: TCP
+          port: 5432

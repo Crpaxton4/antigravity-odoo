@@ -15,7 +15,18 @@ odoo:
     port: 5432
     name: odoo_db
     user: odoo_user
-    password: changeme
+    # ⚠️ REQUIRED: Database password must be provided via one of these methods:
+    # Method 1: Set password directly (DEV ONLY - not recommended for production)
+    #   password: your_password_here
+    # Method 2: Reference an external Kubernetes Secret (RECOMMENDED)
+    #   passwordSecretRef:
+    #     name: odoo-db-secret
+    #     key: password
+    # Method 3: Use existingSecret to provide both user and password
+    #   Set existingSecret below to your pre-created secret name
+    #
+    # If none are provided, the chart installation will fail with an error.
+    password: ""  # Leave empty and use passwordSecretRef or existingSecret instead
   debug:
     enabled: true
     port: 5678  # debugpy port
@@ -89,6 +100,7 @@ startupProbe:
     port: 8069
   initialDelaySeconds: 30
   periodSeconds: 10
+  timeoutSeconds: 5
   failureThreshold: 30  # Allow up to 5 minutes to start
 
 # Pod Disruption Budget

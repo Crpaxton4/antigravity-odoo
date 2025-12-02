@@ -84,14 +84,10 @@ check_secret() {
     fi
 }
 
-# Track if any secrets were updated
-SECRETS_UPDATED=false
-
 # Create PostgreSQL secret
 echo "Creating postgresql-secrets..."
 if check_secret "postgresql-secrets"; then
     echo "  Secret already exists, updating..."
-    SECRETS_UPDATED=true
 fi
 kubectl create secret generic postgresql-secrets \
     --from-literal=postgres-password="$POSTGRES_PASSWORD" \

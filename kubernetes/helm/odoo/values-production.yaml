@@ -20,13 +20,46 @@ resources:
     cpu: 4000m
     memory: 8Gi
 
+# Production-optimized health checks
+livenessProbe:
+  enabled: true
+  httpGet:
+    path: /web/health
+    port: 8069
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+readinessProbe:
+  enabled: true
+  httpGet:
+    path: /web/health
+    port: 8069
+  initialDelaySeconds: 10
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 2
+
+# Startup probe for initial container startup
+startupProbe:
+  enabled: true
+  httpGet:
+    path: /web/health
+    port: 8069
+  initialDelaySeconds: 15
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 21  # Allow up to 3.5 minutes for startup (210 seconds)
 # More aggressive autoscaling
 autoscaling:
   minReplicas: 2
   maxReplicas: 10
   targetCPUUtilizationPercentage: 60
 
-# Stricter affinity
+# Strict affinity: enforce node-level spreading for production resilience
+# Hard constraint ensures no two Odoo replicas run on the same node, preventing
+# single-node failure from impacting multiple replicas
 affinity:
   podAntiAffinity:
     requiredDuringSchedulingIgnoredDuringExecution:

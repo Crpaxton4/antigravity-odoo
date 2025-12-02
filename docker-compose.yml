@@ -35,15 +35,17 @@ services:
     container_name: pgadmin
     hostname: pgadmin
     restart: unless-stopped
+    entrypoint: ["/docker-entrypoint.sh"]
     environment:
       - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL:-admin@localhost.com}
       - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD:-admin}
       - PGADMIN_CONFIG_SERVER_MODE=False
       - PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED=False
+      - POSTGRES_ADMIN_PASSWORD=${POSTGRES_ADMIN_PASSWORD}
     volumes:
       - pgadmin-data:/var/lib/pgadmin
       - ./pgadmin/servers.json:/pgadmin4/servers.json:ro
-      - ./pgadmin/pgpass:/tmp/pgpassfile:ro
+      - ./pgadmin/docker-entrypoint.sh:/docker-entrypoint.sh:ro
     ports:
       - "5050:80"
     networks:

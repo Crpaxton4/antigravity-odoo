@@ -3,26 +3,41 @@
 
 set -e
 
-# Function to print status
+# Detect if running in a terminal for color support
+if [ -t 1 ]; then
+    # Terminal detected - enable colors
+    COLOR_INFO='\033[0;34m'
+    COLOR_SUCCESS='\033[0;32m'
+    COLOR_ERROR='\033[0;31m'
+    COLOR_RESET='\033[0m'
+else
+    # Not a terminal - disable colors
+    COLOR_INFO=''
+    COLOR_SUCCESS=''
+    COLOR_ERROR=''
+    COLOR_RESET=''
+fi
+
+# Function to print status (POSIX-compliant with printf)
 log_info() {
-    echo -e "\033[0;34m[INFO]\033[0m $1"
+    printf "%b[INFO]%b %s\n" "${COLOR_INFO}" "${COLOR_RESET}" "$1"
 }
 
 log_success() {
-    echo -e "\033[0;32m[SUCCESS]\033[0m $1"
+    printf "%b[SUCCESS]%b %s\n" "${COLOR_SUCCESS}" "${COLOR_RESET}" "$1"
 }
 
 log_error() {
-    echo -e "\033[0;31m[ERROR]\033[0m $1"
+    printf "%b[ERROR]%b %s\n" "${COLOR_ERROR}" "${COLOR_RESET}" "$1" >&2
 }
 
-echo "Installing Flux CD..."
+printf "%s\n" "Installing Flux CD..."
 
 # Check if flux CLI is installed
 if ! command -v flux &> /dev/null; then
     log_error "Flux CLI not found. Please install it first:"
-    echo "  brew install fluxcd/tap/flux"
-    echo "  or visit: https://fluxcd.io/flux/installation/"
+    printf "  %s\n" "brew install fluxcd/tap/flux"
+    printf "  %s\n" "or visit: https://fluxcd.io/flux/installation/"
     exit 1
 fi
 
@@ -45,19 +60,19 @@ kubectl wait --for=condition=ready pod -l app=helm-controller -n flux-system --t
 
 log_success "Flux installed successfully!"
 
-echo ""
-echo "Next steps:"
-echo "1. Create namespace: kubectl create namespace antigravity-dev"
-echo "2. Apply GitRepository: kubectl apply -f kubernetes/flux/sources/gitrepository.yaml"
-echo "3. Apply HelmReleases: kubectl apply -f kubernetes/flux/releases/dev/"
-echo "4. Watch reconciliation: flux get sources git"
-echo "                         flux get helmreleases -A"
+printf "\n"
+printf "%s\n" "Next steps:"
+printf "%s\n" "1. Create namespace: kubectl create namespace antigravity-dev"
+printf "%s\n" "2. Apply GitRepository: kubectl apply -f kubernetes/flux/sources/gitrepository.yaml"
+printf "%s\n" "3. Apply HelmReleases: kubectl apply -f kubernetes/flux/releases/dev/"
+printf "%s\n" "4. Watch reconciliation: flux get sources git"
+printf "%s\n" "                         flux get helmreleases -A"
 
-echo ""
-echo "To bootstrap Flux with Git (recommended for production):"
-echo "  flux bootstrap github \\"
-echo "    --owner=YOUR_USERNAME \\"
-echo "    --repository=antigravity-odoo \\"
-echo "    --branch=main \\"
-echo "    --path=./kubernetes/flux \\"
-echo "    --personal"
+printf "\n"
+printf "%s\n" "To bootstrap Flux with Git (recommended for production):"
+printf "%s\n" "  flux bootstrap github \\"
+printf "%s\n" "    --owner=YOUR_USERNAME \\"
+printf "%s\n" "    --repository=antigravity-odoo \\"
+printf "%s\n" "    --branch=main \\"
+printf "%s\n" "    --path=./kubernetes/flux \\"
+printf "%s\n" "    --personal"

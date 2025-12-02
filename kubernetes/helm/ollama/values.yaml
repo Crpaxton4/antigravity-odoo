@@ -9,6 +9,20 @@ image:
 persistence:
   enabled: true
   size: 50Gi  # Large for models
+  mountPath: /root/.ollama  # Ollama's default data directory
+
+# Additional volume mounts for read-only root filesystem
+volumeMounts:
+  - name: tmp
+    mountPath: /tmp
+  - name: cache
+    mountPath: /root/.cache
+
+volumes:
+  - name: tmp
+    emptyDir: {}
+  - name: cache
+    emptyDir: {}
 
 resources:
   requests:
@@ -22,9 +36,25 @@ service:
   type: LoadBalancer
   port: 11434
 
+# Autoscaling configuration
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+# Pod Disruption Budget
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 1
+
 # GPU support (future)
 gpu:
   enabled: false
+
+# Pod affinity/anti-affinity rules
+affinity: {}
   
 nodeSelector: {}
 tolerations: []

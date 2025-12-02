@@ -2,11 +2,25 @@
 prometheus:
   replicaCount: 1
   resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
     limits:
+      cpu: 2000m
       memory: 2Gi
+  persistence:
+    enabled: true
+    size: 10Gi
 
 grafana:
   replicaCount: 1
   resources:
+    requests:
+      cpu: 250m
+      memory: 512Mi
     limits:
+      cpu: 1000m
       memory: 1Gi
+  persistence:
+    enabled: true
+    size: 2Gi

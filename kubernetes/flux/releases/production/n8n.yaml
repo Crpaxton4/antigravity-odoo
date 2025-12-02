@@ -17,7 +17,6 @@ spec:
     - name: postgresql
       namespace: antigravity-prod
   values:
-    replicaCount: 2
     resources:
       requests:
         cpu: 500m
@@ -29,7 +28,9 @@ spec:
       runners:
         enabled: true
       database:
-        password: "prod-n8n-changeme"
+        passwordSecretRef:
+          name: production-n8n-db-secret
+          key: password
     autoscaling:
       enabled: true
       minReplicas: 2

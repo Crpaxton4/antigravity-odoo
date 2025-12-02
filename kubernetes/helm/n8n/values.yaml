@@ -12,6 +12,11 @@ n8n:
     port: 5432
     name: n8n_db
     user: n8n_user
+    # Optional: Reference an external secret for the database password
+    # If set, the chart will use this secret reference instead of a plaintext password
+    # passwordSecretRef:
+    #   name: production-n8n-db-secret
+    #   key: password
 
 persistence:
   enabled: true
@@ -37,13 +42,11 @@ service:
 
 affinity:
   podAntiAffinity:
-    preferredDuringSchedulingIgnoredDuringExecution:
-      - weight: 100
-        podAffinityTerm:
-          labelSelector:
-            matchExpressions:
-              - key: app
-                operator: In
-                values:
-                  - n8n
-          topologyKey: kubernetes.io/hostname
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+            - key: app
+              operator: In
+              values:
+                - n8n
+        topologyKey: kubernetes.io/hostname

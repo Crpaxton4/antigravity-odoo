@@ -1,6 +1,16 @@
-# Production values for n8n
-replicaCount: 2
+ # Production values for n8n
+# Note: replicaCount is not set here because autoscaling is enabled
+# HPA dynamically controls pod counts between minReplicas and maxReplicas
 
+# Resource configuration for small-to-medium production n8n workloads
+# Baseline assumes moderate workflow complexity (10-50 concurrent executions)
+# Requests: ensure pods are schedulable and establish baseline allocation
+# Limits: cap maximum usage to prevent resource exhaustion
+# These are starting recommendations - tune based on actual metrics:
+#   - Monitor CPU/memory usage in Prometheus/Grafana
+#   - Adjust based on workflow complexity and concurrency patterns
+#   - Coordinate with HPA thresholds (CPU 70%, Memory 80%)
+# See: prometheus/prometheus.yml for metrics collection, grafana/ for dashboards
 resources:
   requests:
     cpu: 500m
@@ -13,6 +23,8 @@ n8n:
   runners:
     enabled: true
   
+# Autoscaling configuration
+# When enabled, HPA overrides replicaCount and dynamically scales between min/max replicas
 autoscaling:
   enabled: true
   minReplicas: 2

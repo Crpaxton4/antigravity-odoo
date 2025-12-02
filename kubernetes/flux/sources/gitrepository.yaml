@@ -5,7 +5,10 @@ metadata:
   name: antigravity-odoo
   namespace: flux-system
 spec:
-  interval: 1m0s
+  # Sync interval set to 5m to reduce polling load and cluster reconciliation overhead
+  # This balances timely updates with cluster resource efficiency
+  # For immediate deploys, use: flux reconcile source git antigravity-odoo
+  interval: 5m0s
   url: https://github.com/Crpaxton4/antigravity-odoo
   ref:
     branch: main

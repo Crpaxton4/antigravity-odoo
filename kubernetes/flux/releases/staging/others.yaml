@@ -42,7 +42,9 @@ spec:
       namespace: antigravity-staging
   values:
     pgadmin:
-      password: "staging-admin-changeme"
+      passwordSecretRef:
+        name: staging-pgadmin-secret
+        key: password
     resources:
       requests:
         cpu: 100m
@@ -71,13 +73,23 @@ spec:
   values:
     grafana:
       database:
-        password: "staging-grafana-changeme"
+        passwordSecretRef:
+          name: staging-grafana-db-secret
+          key: password
       replicaCount: 1
       resources:
+        requests:
+          cpu: 250m
+          memory: 512Mi
         limits:
+          cpu: 1000m
           memory: 1Gi
     prometheus:
       replicaCount: 1
       resources:
+        requests:
+          cpu: 500m
+          memory: 1Gi
         limits:
+          cpu: 2000m
           memory: 2Gi

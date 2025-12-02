@@ -52,6 +52,8 @@ graph TD
     ```bash
     docker compose up -d
     ```
+    
+    **Note**: pgAdmin credentials are automatically configured from `.env` via the entrypoint script.
 
 3.  **Access Services**:
     - **Odoo**: [http://localhost:8069](http://localhost:8069)
@@ -171,7 +173,7 @@ If you prefer step-by-step control:
 
 1.  **Install Flux**:
     ```bash
-    .devops/kube/05-install-flux.sh
+    ./.devops/kube/05-install-flux.sh
     ```
 
 2.  **Create Namespace**:
@@ -239,3 +241,61 @@ kubectl get pods -n antigravity-dev
 kubectl logs -f <pod-name> -n antigravity-dev
 kubectl get events -n antigravity-dev --sort-by='.lastTimestamp'
 ```
+
+---
+
+## 🐛 Debugging
+
+### VS Code Python Debugger Setup
+
+The project includes VS Code debugger configuration for attaching to Odoo running in Docker.
+
+#### Prerequisites
+
+1. **Install debugpy in Odoo container**:
+   ```bash
+   docker compose exec odoo pip install debugpy
+   ```
+
+2. **Start Odoo with debugger** (modify `docker-compose.yml` or run manually):
+   ```yaml
+   # Add to docker-compose.yml under odoo service
+   command: python -m debugpy --listen 0.0.0.0:5678 --wait-for-client /usr/bin/odoo
+   ports:
+     - "5678:5678"  # Debug port
+   ```
+
+3. **Restart Odoo container**:
+   ```bash
+   docker compose restart odoo
+   ```
+
+#### Attach Debugger
+
+1. Open VS Code
+2. Go to Run and Debug (Ctrl+Shift+D)
+3. Select "Attach to Odoo" configuration
+4. Press F5 or click "Start Debugging"
+
+#### Custom Debug Host/Port
+
+If you need to use a different host or port:
+
+**Option A - Environment Variables**:
+```bash
+export DEBUG_HOST=192.168.1.100
+export DEBUG_PORT=5679
+code .  # Start VS Code with these environment variables
+```
+
+**Option B - Edit `.vscode/launch.json`**:
+```json
+{
+    "host": "your-custom-host",
+    "port": 5679
+}
+```
+
+The default configuration uses `localhost:5678` which works for standard Docker Compose setups.
+
+---

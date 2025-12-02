@@ -57,12 +57,22 @@ spec:
         - name: HOST
           value: {{ .Values.odoo.database.host | quote }}
         - name: USER
-          value: {{ .Values.odoo.database.user | quote }}
-        - name: PASSWORD
           valueFrom:
             secretKeyRef:
-              name: {{ .Values.existingSecret | default (include "odoo.fullname" .) }}
+              name: {{ .Values.existingSecret | default (printf "%s-db-credentials" (include "odoo.fullname" .)) }}
+              key: db-user
+        - name: PASSWORD
+          {{- if .Values.odoo.database.passwordSecretRef }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.odoo.database.passwordSecretRef.name }}
+              key: {{ .Values.odoo.database.passwordSecretRef.key }}
+          {{- else }}
+          valueFrom:
+            secretKeyRef:
+              name: {{ .Values.existingSecret | default (printf "%s-db-credentials" (include "odoo.fullname" .)) }}
               key: db-password
+          {{- end }}
         - name: DB_NAME
           value: {{ .Values.odoo.database.name | quote }}
         volumeMounts:
@@ -88,7 +98,7 @@ spec:
         {{- if .Values.livenessProbe.enabled }}
         livenessProbe:
           httpGet:
-            path: {{ .Values.livenessProbe.httpGet.path }}
+            path: "{{ .Values.livenessProbe.httpGet.path }}"
             port: {{ .Values.livenessProbe.httpGet.port }}
           initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
@@ -98,7 +108,7 @@ spec:
         {{- if .Values.readinessProbe.enabled }}
         readinessProbe:
           httpGet:
-            path: {{ .Values.readinessProbe.httpGet.path }}
+            path: "{{ .Values.readinessProbe.httpGet.path }}"
             port: {{ .Values.readinessProbe.httpGet.port }}
           initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
@@ -108,10 +118,11 @@ spec:
         {{- if .Values.startupProbe.enabled }}
         startupProbe:
           httpGet:
-            path: {{ .Values.startupProbe.httpGet.path }}
+            path: "{{ .Values.startupProbe.httpGet.path }}"
             port: {{ .Values.startupProbe.httpGet.port }}
           initialDelaySeconds: {{ .Values.startupProbe.initialDelaySeconds }}
           periodSeconds: {{ .Values.startupProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.startupProbe.timeoutSeconds }}
           failureThreshold: {{ .Values.startupProbe.failureThreshold }}
         {{- end }}
         resources:

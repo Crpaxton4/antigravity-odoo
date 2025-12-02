@@ -1,6 +1,12 @@
 # Staging values for pgAdmin
 replicaCount: 1
 
+# Image configuration
+image:
+  tag: "latest"
+  pullPolicy: Always
+
+# Resource limits for staging environment
 resources:
   requests:
     cpu: 100m
@@ -8,3 +14,50 @@ resources:
   limits:
     cpu: 500m
     memory: 512Mi
+
+# Persistence configuration
+persistence:
+  enabled: true
+  size: 5Gi
+  accessMode: ReadWriteOnce
+  storageClass: ""
+  # existingClaim: ""
+
+# Database connection configuration
+# Password should be provided via Secret reference
+env:
+  - name: PGADMIN_DEFAULT_EMAIL
+    value: "admin@staging.local"
+  - name: PGADMIN_DEFAULT_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: staging-pgadmin-secret
+        key: admin-password
+  - name: POSTGRES_ADMIN_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: staging-postgres-secret
+        key: admin-password
+
+# Service configuration
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 80
+
+# Ingress configuration for staging environment
+ingress:
+  enabled: true
+  className: nginx
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-staging
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+  hosts:
+    - host: pgadmin-staging.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: pgadmin-staging-tls
+      hosts:
+        - pgadmin-staging.example.com

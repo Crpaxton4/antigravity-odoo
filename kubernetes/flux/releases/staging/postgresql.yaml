@@ -16,12 +16,13 @@ spec:
   values:
     replicaCount: 1
     postgresql:
-      postgresPassword: "staging-changeme"
-      adminPassword: "staging-admin-changeme"
-    databases:
-      odoo:
-        password: "staging-odoo-changeme"
-      n8n:
-        password: "staging-n8n-changeme"
-      grafana:
-        password: "staging-grafana-changeme"
+    values:
+      replicaCount: 1
+      postgresql:
+      databases:
+        odoo:
+        n8n:
+        grafana:
+    valuesFrom:
+      - kind: Secret
+        name: postgresql-credentials

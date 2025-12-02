@@ -29,4 +29,6 @@ spec:
       runners:
         enabled: true
       database:
-        password: "staging-n8n-changeme"
+        passwordSecretRef:
+          name: staging-n8n-db-secret
+          key: password

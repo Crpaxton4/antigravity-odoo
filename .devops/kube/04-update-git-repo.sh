@@ -67,6 +67,6 @@ echo "Next Steps"
 echo "=========================================="
 echo ""
 echo "1. Deploy services:"
-echo "   ./06-deploy.sh"
+echo "   ./.devops/kube/06-deploy.sh"
 echo ""
  

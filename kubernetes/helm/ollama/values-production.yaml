@@ -1,5 +1,6 @@
 # Production values for Ollama
-replicaCount: 1
+# High availability configuration with multiple replicas
+replicaCount: 2
 
 resources:
   requests:
@@ -8,3 +9,77 @@ resources:
   limits:
     cpu: 8000m
     memory: 16Gi
+
+# Health probes for production reliability
+livenessProbe:
+  httpGet:
+    path: /
+    port: 11434
+  initialDelaySeconds: 60
+  periodSeconds: 30
+  timeoutSeconds: 10
+  failureThreshold: 3
+  successThreshold: 1
+
+readinessProbe:
+  httpGet:
+    path: /
+    port: 11434
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+  successThreshold: 1
+
+# Security context for least-privilege execution
+# Ollama tested with UID 1000 (compatible with official ollama/ollama image)
+# fsGroup ensures persistent volume is writable by the user
+# Read-only root filesystem enabled with explicit writable volumes:
+#   - /root/.ollama (persistent): model storage, configuration
+#   - /tmp (emptyDir): temporary files during model operations
+#   - /root/.cache (emptyDir): runtime cache
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 1000
+  fsGroup: 1000
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: true
+  allowPrivilegeEscalation: false
+
+# Pod anti-affinity for high availability
+# Ensures replicas are scheduled on different nodes
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+            - key: app
+              operator: In
+              values:
+                - ollama
+        topologyKey: kubernetes.io/hostname
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - ollama
+          topologyKey: topology.kubernetes.io/zone
+
+# Horizontal Pod Autoscaler configuration
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+# Pod Disruption Budget to maintain availability during updates
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1

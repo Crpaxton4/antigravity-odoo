@@ -1,12 +1,16 @@
 # Staging values for n8n
 replicaCount: 1
 
+# Resource configuration for staging environment
+# CPU ratio: 2× (250m request → 500m limit) to prevent cluster overcommitment
+# Memory ratio: 2× (512Mi request → 1Gi limit) matches expected staging workload
+# Conservative limits reduce risk of resource contention in shared staging cluster
 resources:
   requests:
     cpu: 250m
     memory: 512Mi
   limits:
-    cpu: 1000m
+    cpu: 500m
     memory: 1Gi
 
 n8n:

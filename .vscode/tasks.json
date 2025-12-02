@@ -5,26 +5,52 @@
             "label": "docker-compose up",
             "type": "shell",
             "command": "docker compose up -d",
-            "problemMatcher": []
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "silent",
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": false
+            }
         },
         {
-            "label": "docker-compose down",
+            "label": "⚠️ docker-compose down (DESTRUCTIVE - stops all services)",
             "type": "shell",
             "command": "docker compose down",
-            "problemMatcher": []
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "showReuseMessage": true,
+                "clear": false,
+                "focus": true
+            }
         },
         {
             "label": "restart odoo",
             "type": "shell",
             "command": "docker compose restart odoo",
-            "problemMatcher": []
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "silent",
+                "panel": "shared",
+                "showReuseMessage": false,
+                "clear": false
+            }
         },
         {
             "label": "view odoo logs",
             "type": "shell",
             "command": "docker compose logs -f odoo",
             "isBackground": true,
-            "problemMatcher": []
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": true,
+                "focus": false
+            }
         }
     ]
 }

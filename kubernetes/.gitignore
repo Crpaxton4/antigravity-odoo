@@ -9,7 +9,7 @@ secrets.yaml
 .env
 .secrets.txt
 *-secret.yaml
-!templates/secret.yaml
+!templates/secret.yaml  # Helm template for Secret resource (contains no actual credentials)
 
 # Local values overrides
 *-local.yaml
