@@ -1,0 +1,82 @@
+# Default values for PostgreSQL
+# This is for DEV environment - override with values-staging.yaml or values-production.yaml
+
+replicaCount: 1
+
+image:
+  repository: pgvector/pgvector
+  tag: pg16
+  pullPolicy: IfNotPresent
+
+# PostgreSQL configuration
+postgresql:
+  user: postgres
+  database: postgres
+  
+# Database users (passwords will be in secrets)
+databases:
+  odoo:
+    name: odoo_db
+    user: odoo_user
+  n8n:
+    name: n8n_db
+    user: n8n_user
+  grafana:
+    name: grafana_db
+    user: grafana_user
+
+# Persistent storage
+persistence:
+  enabled: true
+  storageClass: ""  # Use default storage class
+  size: 10Gi
+  accessMode: ReadWriteOnce
+
+# Resource limits
+resources:
+  requests:
+    cpu: 500m
+    memory: 1Gi
+  limits:
+    cpu: 2000m
+    memory: 4Gi
+
+# Health checks
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 6
+
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 5
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 6
+
+# Service configuration
+service:
+  type: ClusterIP
+  port: 5432
+
+# Pod anti-affinity for multi-node distribution
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - postgresql
+          topologyKey: kubernetes.io/hostname
+
+# NodeSelector for specific nodes (optional)
+nodeSelector: {}
+
+# Tolerations (optional)
+tolerations: []

@@ -1,0 +1,60 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: ollama
+  namespace: antigravity-dev
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: ./kubernetes/helm/ollama
+      sourceRef:
+        kind: GitRepository
+        name: antigravity-odoo
+        namespace: flux-system
+  values:
+    replicaCount: 1
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: pgadmin
+  namespace: antigravity-dev
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: ./kubernetes/helm/pgadmin
+      sourceRef:
+        kind: GitRepository
+        name: antigravity-odoo
+        namespace: flux-system
+  dependsOn:
+    - name: postgresql
+      namespace: antigravity-dev
+  values:
+    pgadmin:
+      password: "dev-admin-changeme"
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: monitoring
+  namespace: antigravity-dev
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: ./kubernetes/helm/monitoring
+      sourceRef:
+        kind: GitRepository
+        name: antigravity-odoo
+        namespace: flux-system
+  dependsOn:
+    - name: postgresql
+      namespace: antigravity-dev
+  values:
+    grafana:
+      database:
+        password: "dev-grafana-changeme"

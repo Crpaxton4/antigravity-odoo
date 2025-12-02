@@ -1,0 +1,39 @@
+# Production values for Odoo
+
+replicaCount: 2
+
+# Disable debug in production
+odoo:
+  debug:
+    enabled: false
+
+# Larger storage
+persistence:
+  size: 100Gi
+
+# Higher resources
+resources:
+  requests:
+    cpu: 1000m
+    memory: 4Gi
+  limits:
+    cpu: 4000m
+    memory: 8Gi
+
+# More aggressive autoscaling
+autoscaling:
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 60
+
+# Stricter affinity
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+            - key: app
+              operator: In
+              values:
+                - odoo
+        topologyKey: kubernetes.io/hostname

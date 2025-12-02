@@ -1,0 +1,109 @@
+# Default values for Odoo
+# This is for DEV environment
+
+replicaCount: 1
+
+image:
+  repository: odoo
+  tag: "19.0"
+  pullPolicy: IfNotPresent
+
+# Odoo configuration
+odoo:
+  database:
+    host: postgresql  # Service name of PostgreSQL
+    port: 5432
+    name: odoo_db
+    user: odoo_user
+  debug:
+    enabled: true
+    port: 5678  # debugpy port
+
+# Persistent storage for Odoo data
+persistence:
+  enabled: true
+  storageClass: ""
+  size: 10Gi
+  accessMode: ReadWriteOnce
+
+# Addons volume (if using custom addons)
+addons:
+  enabled: true
+  # Mount from host path or PVC
+  hostPath: ""  # Leave empty to use PVC
+
+# Resource limits
+resources:
+  requests:
+    cpu: 500m
+    memory: 1Gi
+  limits:
+    cpu: 2000m
+    memory: 4Gi
+
+# Autoscaling
+autoscaling:
+  enabled: true
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+# Service configuration
+service:
+  type: LoadBalancer
+  port: 8069
+  debugPort: 5678
+
+# Health checks
+livenessProbe:
+  enabled: true
+  httpGet:
+    path: /web/health
+    port: 8069
+  initialDelaySeconds: 180
+  periodSeconds: 30
+  timeoutSeconds: 10
+  failureThreshold: 6
+
+readinessProbe:
+  enabled: true
+  httpGet:
+    path: /web/health
+    port: 8069
+  initialDelaySeconds: 60
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 6
+
+# Startup probe for slow-starting Odoo
+startupProbe:
+  enabled: true
+  httpGet:
+    path: /web/health
+    port: 8069
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  failureThreshold: 30  # Allow up to 5 minutes to start
+
+# Pod Disruption Budget
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+
+# Pod anti-affinity for multi-node distribution
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app
+                operator: In
+                values:
+                  - odoo
+          topologyKey: kubernetes.io/hostname
+
+nodeSelector: {}
+tolerations: []

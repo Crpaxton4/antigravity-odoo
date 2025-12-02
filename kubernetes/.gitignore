@@ -1,0 +1,33 @@
+# .gitignore for Kubernetes directory
+
+# Helm charts
+*.tgz
+helm/*/charts/
+
+# Secrets (never commit!)
+*secret*.yaml
+*Secret*.yaml
+!*sealed-secret*.yaml  # Sealed secrets are safe
+
+# Local values overrides
+*-local.yaml
+values.local.yaml
+
+# Temporary files
+*.tmp
+*.bak
+*~
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Testing output
+test-output/
+*.log

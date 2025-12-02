@@ -1,0 +1,17 @@
+# Staging values for PostgreSQL
+# Override default values.yaml settings
+
+replicaCount: 2  # Multi-replica for staging testing
+
+# Medium storage for staging
+persistence:
+  size: 50Gi
+
+# Medium resource limits
+resources:
+  requests:
+    cpu: 750m
+    memory: 2Gi
+  limits:
+    cpu: 3000m
+    memory: 6Gi

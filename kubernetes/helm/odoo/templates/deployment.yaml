@@ -1,0 +1,133 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "odoo.fullname" . }}
+  labels:
+    {{- include "odoo.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "odoo.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "odoo.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      initContainers:
+      - name: wait-for-postgres
+        image: busybox:1.35
+        command:
+        - sh
+        - -c
+        - |
+          until nc -z {{ .Values.odoo.database.host }} {{ .Values.odoo.database.port }}; do
+            echo "Waiting for PostgreSQL...";
+            sleep 2;
+          done;
+          echo "PostgreSQL is ready!";
+      containers:
+      - name: odoo
+        image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        ports:
+        - name: http
+          containerPort: 8069
+          protocol: TCP
+        {{- if .Values.odoo.debug.enabled }}
+        - name: debug
+          containerPort: {{ .Values.odoo.debug.port }}
+          protocol: TCP
+        {{- end }}
+        env:
+        - name: HOST
+          value: {{ .Values.odoo.database.host | quote }}
+        - name: USER
+          value: {{ .Values.odoo.database.user | quote }}
+        - name: PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "odoo.fullname" . }}
+              key: db-password
+        - name: DB_NAME
+          value: {{ .Values.odoo.database.name | quote }}
+        volumeMounts:
+        - name: odoo-data
+          mountPath: /var/lib/odoo
+        - name: config
+          mountPath: /etc/odoo
+        {{- if .Values.addons.enabled }}
+        - name: addons
+          mountPath: /mnt/extra-addons
+        {{- end }}
+        command:
+        {{- if .Values.odoo.debug.enabled }}
+        - "odoo"
+        - "--dev=reload,xml,qweb,werkzeug"
+        - "-c"
+        - "/etc/odoo/odoo.conf"
+        {{- else }}
+        - "odoo"
+        - "-c"
+        - "/etc/odoo/odoo.conf"
+        {{- end }}
+        {{- if .Values.livenessProbe.enabled }}
+        livenessProbe:
+          {{- toYaml .Values.livenessProbe.httpGet | nindent 10 }}
+          initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+        {{- end }}
+        {{- if .Values.readinessProbe.enabled }}
+        readinessProbe:
+          {{- toYaml .Values.readinessProbe.httpGet | nindent 10 }}
+          initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+          timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+          failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+        {{- end }}
+        {{- if .Values.startupProbe.enabled }}
+        startupProbe:
+          {{- toYaml .Values.startupProbe.httpGet | nindent 10 }}
+          initialDelaySeconds: {{ .Values.startupProbe.initialDelaySeconds }}
+          periodSeconds: {{ .Values.startupProbe.periodSeconds }}
+          failureThreshold: {{ .Values.startupProbe.failureThreshold }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+      volumes:
+      - name: config
+        configMap:
+          name: {{ include "odoo.fullname" . }}-config
+      - name: odoo-data
+        {{- if .Values.persistence.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ include "odoo.fullname" . }}-data
+        {{- else }}
+        emptyDir: {}
+        {{- end }}
+      {{- if .Values.addons.enabled }}
+      - name: addons
+        {{- if .Values.addons.hostPath }}
+        hostPath:
+          path: {{ .Values.addons.hostPath }}
+          type: Directory
+        {{- else }}
+        emptyDir: {}
+        {{- end }}
+      {{- end }}

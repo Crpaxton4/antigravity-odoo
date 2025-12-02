@@ -1,0 +1,24 @@
+{
+    "folders": [
+        {
+            "name": "Odoo Development",
+            "path": "."
+        },
+        {
+            "name": "Odoo Source (Reference Only)",
+            "path": "./odoo-source"
+        }
+    ],
+    "settings": {
+        "files.exclude": {
+            "**/__pycache__": true,
+            "**/*.pyc": true
+        },
+        "python.analysis.extraPaths": [
+            "./odoo-source"
+        ],
+        "search.exclude": {
+            "**/odoo-source/**": false
+        }
+    }
+}

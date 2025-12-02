@@ -1,0 +1,29 @@
+---
+# Development namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: antigravity-dev
+  labels:
+    environment: development
+    managed-by: flux
+
+---
+# Staging namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: antigravity-staging
+  labels:
+    environment: staging
+    managed-by: flux
+
+---
+# Production namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: antigravity-prod
+  labels:
+    environment: production
+    managed-by: flux

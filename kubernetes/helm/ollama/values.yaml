@@ -1,0 +1,30 @@
+# Ollama values
+replicaCount: 1
+
+image:
+  repository: ollama/ollama
+  tag: latest
+  pullPolicy: IfNotPresent
+
+persistence:
+  enabled: true
+  size: 50Gi  # Large for models
+
+resources:
+  requests:
+    cpu: 500m
+    memory: 2Gi
+  limits:
+    cpu: 4000m
+    memory: 8Gi
+
+service:
+  type: LoadBalancer
+  port: 11434
+
+# GPU support (future)
+gpu:
+  enabled: false
+  
+nodeSelector: {}
+tolerations: []

@@ -1,0 +1,1 @@
+postgres:5432:*:pgadmin:${POSTGRES_ADMIN_PASSWORD}

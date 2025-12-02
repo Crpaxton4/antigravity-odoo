@@ -1,0 +1,8 @@
+[cosmic-ray]
+module-path = "addons"
+timeout = 10
+excluded-modules = []
+test-command = "python3 -m pytest addons/my_module/tests"
+
+[cosmic-ray.distributor]
+name = "local"

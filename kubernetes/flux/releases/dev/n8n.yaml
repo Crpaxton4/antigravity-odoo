@@ -1,0 +1,22 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: n8n
+  namespace: antigravity-dev
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: ./kubernetes/helm/n8n
+      sourceRef:
+        kind: GitRepository
+        name: antigravity-odoo
+        namespace: flux-system
+  dependsOn:
+    - name: postgresql
+      namespace: antigravity-dev
+  values:
+    n8n:
+      database:
+        password: "dev-n8n-changeme"

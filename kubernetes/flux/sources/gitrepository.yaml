@@ -1,0 +1,14 @@
+---
+apiVersion: source.toolkit.fluxcd.io/v1
+kind: GitRepository
+metadata:
+  name: antigravity-odoo
+  namespace: flux-system
+spec:
+  interval: 1m0s
+  url: https://github.com/YOUR_USERNAME/antigravity-odoo  # UPDATE THIS
+  ref:
+    branch: main
+  # For private repos, create a secret:
+  # secretRef:
+  #   name: git-credentials
