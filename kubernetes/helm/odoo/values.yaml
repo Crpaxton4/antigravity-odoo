@@ -16,13 +16,13 @@ odoo:
     name: odoo_db
     user: odoo_user
     password: changeme
+  debug:
+    enabled: true
+    port: 5678  # debugpy port
 
 # Existing secret for passwords (optional)
 # If set, the chart will not create a secret and will use this one instead
 existingSecret: ""
-  debug:
-    enabled: true
-    port: 5678  # debugpy port
 
 # Persistent storage for Odoo data
 persistence:
