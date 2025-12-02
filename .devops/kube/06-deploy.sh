@@ -86,9 +86,41 @@ echo ""
 flux get helmreleases -n "$NAMESPACE"
 echo ""
 
-# Show pods
+# Show pods before reset
 echo "Pods in $NAMESPACE:"
 kubectl get pods -n "$NAMESPACE"
+echo ""
+
+# Always reset HelmReleases to ensure fresh deployment
+echo "Resetting all HelmReleases for fresh deployment..."
+EXISTING_RELEASES=$(kubectl get helmreleases -n "$NAMESPACE" -o name 2>/dev/null || true)
+
+if [ -n "$EXISTING_RELEASES" ]; then
+    echo "Deleting existing HelmReleases:"
+    echo "$EXISTING_RELEASES" | while read -r release; do
+        release_name=$(echo "$release" | cut -d'/' -f2)
+        echo "  - $release_name"
+    done
+    
+    kubectl delete helmreleases --all -n "$NAMESPACE" 2>/dev/null || true
+    
+    echo ""
+    echo "Waiting for cleanup..."
+    sleep 5
+fi
+
+echo "Applying fresh HelmReleases from Git..."
+kubectl apply -f kubernetes/flux/releases/dev/
+
+echo ""
+echo "✓ HelmReleases applied fresh. Flux will deploy from latest Git commit."
+echo ""
+echo "Watch pods come up:"
+echo "  kubectl get pods -n $NAMESPACE -w"
+echo ""
+echo "Check HelmRelease status:"
+echo "  flux get helmreleases -n $NAMESPACE"
+
 echo ""
 
 echo "=========================================="

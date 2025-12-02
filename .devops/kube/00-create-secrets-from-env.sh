@@ -106,6 +106,7 @@ if check_secret "odoo-secrets"; then
     echo "  Secret already exists, updating..."
 fi
 kubectl create secret generic odoo-secrets \
+    --from-literal=db-user="odoo_user" \
     --from-literal=db-password="$POSTGRES_ODOO_PASSWORD" \
     --namespace="$NAMESPACE" \
     --dry-run=client -o yaml | kubectl apply -f - > /dev/null
