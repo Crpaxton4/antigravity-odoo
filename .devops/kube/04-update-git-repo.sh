@@ -26,8 +26,32 @@ fi
 
 # If empty, keep current
 if [ -z "$GIT_URL" ]; then
-    echo "Using current URL: $CURRENT_URL"
-    GIT_URL="$CURRENT_URL"
+    echo "✓ Keeping current URL: $CURRENT_URL"
+    exit 0
+fi
+
+# Normalize URLs for comparison (remove .git suffix if present)
+NORMALIZED_CURRENT=$(echo "$CURRENT_URL" | sed 's/\.git$//')
+NORMALIZED_INPUT=$(echo "$GIT_URL" | sed 's/\.git$//')
+
+# Check if URL is already set correctly
+if [ "$NORMALIZED_CURRENT" == "$NORMALIZED_INPUT" ]; then
+    echo "✓ Git repository URL is already set to: $CURRENT_URL"
+    echo "No changes needed."
+    exit 0
+fi
+
+echo ""
+echo "Changing URL from:"
+echo "  Old: $CURRENT_URL"
+echo "  New: $GIT_URL"
+echo ""
+read -p "Continue? (Y/n): " -n 1 -r
+echo
+
+if [[ $REPLY =~ ^[Nn]$ ]]; then
+    echo "Cancelled. Keeping current URL."
+    exit 0
 fi
 
 # Update the URL

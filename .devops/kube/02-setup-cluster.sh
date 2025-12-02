@@ -34,33 +34,55 @@ echo "  Disk:   $DISK"
 echo "  Driver: $DRIVER"
 echo ""
 
-# Check if cluster already exists
+# Check if cluster already exists and is running
 if minikube status &> /dev/null; then
-    echo "⚠️  Minikube cluster already exists."
+    CLUSTER_STATUS=$(minikube status -o json 2>/dev/null | grep -o '"Running"' | wc -l)
     
-    # Check for --force argument or prompt
-    if [ "$1" == "--force" ]; then
-        echo "Force flag detected. Recreating cluster..."
-        RECREATE="y"
-    else
-        read -p "Do you want to delete and recreate? (y/N): " -n 1 -r
-        echo
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            RECREATE="y"
-        else
-            RECREATE="n"
+    if [ "$CLUSTER_STATUS" -ge 3 ]; then
+        echo "✓ Minikube cluster is already running"
+        
+        # Check if it matches desired configuration
+        CURRENT_CPUS=$(kubectl get node minikube -o jsonpath='{.status.capacity.cpu}' 2>/dev/null || echo "0")
+        CURRENT_MEMORY=$(kubectl get node minikube -o jsonpath='{.status.capacity.memory}' 2>/dev/null | sed 's/Ki//' || echo "0")
+        CURRENT_MEMORY_MB=$((CURRENT_MEMORY / 1024))
+        
+        echo ""
+        echo "Current cluster configuration:"
+        echo "  CPUs:   $CURRENT_CPUS"
+        echo "  Memory: ${CURRENT_MEMORY_MB}MB"
+        echo ""
+        
+        if [ "$1" != "--force" ]; then
+            read -p "Do you want to delete and recreate? (y/N): " -n 1 -r
+            echo
+            if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+                echo "Keeping existing cluster."
+                exit 0
+            fi
         fi
-    fi
-
-    if [ "$RECREATE" == "y" ]; then
+        
         echo "Deleting existing cluster..."
         minikube delete
     else
-        echo "Keeping existing cluster."
-        echo "Starting cluster if stopped..."
-        minikube start
-        exit 0
+        echo "⚠️  Minikube cluster exists but is not fully running."
+        echo "Deleting and recreating..."
+        minikube delete
     fi
+elif minikube profile list 2>/dev/null | grep -q minikube; then
+    echo "⚠️  Minikube cluster exists but is stopped."
+    
+    if [ "$1" != "--force" ]; then
+        read -p "Do you want to start the existing cluster? (Y/n): " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Nn]$ ]]; then
+            echo "Starting existing cluster..."
+            minikube start
+            exit 0
+        fi
+    fi
+    
+    echo "Deleting stopped cluster..."
+    minikube delete
 fi
 
 echo "Creating Minikube cluster..."

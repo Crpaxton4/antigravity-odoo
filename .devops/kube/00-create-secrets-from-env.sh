@@ -74,8 +74,25 @@ kubectl create namespace "$NAMESPACE" --dry-run=client -o yaml | kubectl apply -
 echo "✓ Namespace $NAMESPACE ready"
 echo ""
 
+# Function to check if secret exists and matches
+check_secret() {
+    local secret_name=$1
+    if kubectl get secret "$secret_name" -n "$NAMESPACE" &> /dev/null; then
+        return 0  # exists
+    else
+        return 1  # doesn't exist
+    fi
+}
+
+# Track if any secrets were updated
+SECRETS_UPDATED=false
+
 # Create PostgreSQL secret
 echo "Creating postgresql-secrets..."
+if check_secret "postgresql-secrets"; then
+    echo "  Secret already exists, updating..."
+    SECRETS_UPDATED=true
+fi
 kubectl create secret generic postgresql-secrets \
     --from-literal=postgres-password="$POSTGRES_PASSWORD" \
     --from-literal=admin-password="$POSTGRES_ADMIN_PASSWORD" \
@@ -83,48 +100,60 @@ kubectl create secret generic postgresql-secrets \
     --from-literal=n8n-password="$POSTGRES_N8N_PASSWORD" \
     --from-literal=grafana-password="${POSTGRES_GRAFANA_PASSWORD:-$POSTGRES_ADMIN_PASSWORD}" \
     --namespace="$NAMESPACE" \
-    --dry-run=client -o yaml | kubectl apply -f -
+    --dry-run=client -o yaml | kubectl apply -f - > /dev/null
 
-echo "✓ Created postgresql-secrets"
+echo "✓ Created/Updated postgresql-secrets"
 
 # Create Odoo secret
 echo "Creating odoo-secrets..."
+if check_secret "odoo-secrets"; then
+    echo "  Secret already exists, updating..."
+fi
 kubectl create secret generic odoo-secrets \
     --from-literal=db-password="$POSTGRES_ODOO_PASSWORD" \
     --namespace="$NAMESPACE" \
-    --dry-run=client -o yaml | kubectl apply -f -
+    --dry-run=client -o yaml | kubectl apply -f - > /dev/null
 
-echo "✓ Created odoo-secrets"
+echo "✓ Created/Updated odoo-secrets"
 
 # Create n8n secrets
 echo "Creating n8n-secrets..."
+if check_secret "n8n-secrets"; then
+    echo "  Secret already exists, updating..."
+fi
 kubectl create secret generic n8n-secrets \
     --from-literal=db-password="$POSTGRES_N8N_PASSWORD" \
     --from-literal=encryption-key="${N8N_ENCRYPTION_KEY}" \
     --from-literal=jwt-secret="${N8N_USER_MANAGEMENT_JWT_SECRET}" \
     --namespace="$NAMESPACE" \
-    --dry-run=client -o yaml | kubectl apply -f -
+    --dry-run=client -o yaml | kubectl apply -f - > /dev/null
 
-echo "✓ Created n8n-secrets"
+echo "✓ Created/Updated n8n-secrets"
 
 # Create pgAdmin secret
 echo "Creating pgadmin-secrets..."
+if check_secret "pgadmin-secrets"; then
+    echo "  Secret already exists, updating..."
+fi
 kubectl create secret generic pgadmin-secrets \
     --from-literal=password="${PGADMIN_DEFAULT_PASSWORD:-admin}" \
     --namespace="$NAMESPACE" \
-    --dry-run=client -o yaml | kubectl apply -f -
+    --dry-run=client -o yaml | kubectl apply -f - > /dev/null
 
-echo "✓ Created pgadmin-secrets"
+echo "✓ Created/Updated pgadmin-secrets"
 
 # Create Grafana secret
 echo "Creating grafana-secrets..."
+if check_secret "grafana-secrets"; then
+    echo "  Secret already exists, updating..."
+fi
 kubectl create secret generic grafana-secrets \
     --from-literal=admin-password="${GF_SECURITY_ADMIN_PASSWORD:-admin}" \
     --from-literal=db-password="${POSTGRES_GRAFANA_PASSWORD:-$POSTGRES_ADMIN_PASSWORD}" \
     --namespace="$NAMESPACE" \
-    --dry-run=client -o yaml | kubectl apply -f -
+    --dry-run=client -o yaml | kubectl apply -f - > /dev/null
 
-echo "✓ Created grafana-secrets"
+echo "✓ Created/Updated grafana-secrets"
 
 echo ""
 echo "=========================================="

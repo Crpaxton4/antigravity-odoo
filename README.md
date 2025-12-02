@@ -79,24 +79,95 @@ This stack uses **Flux CD** for GitOps-based deployment and **Helm** for package
 - `flux` CLI
 - A Kubernetes cluster (Minikube or Cloud)
 
-### Automated Deployment (Minikube)
+### 🚀 Quick Start (Automated)
 
-We provide automated scripts in `.devops/kube/` to streamline the process.
+We provide fully automated scripts in `.devops/kube/` for streamlined deployment:
 
 ```bash
 cd .devops/kube
 
-# 1. Setup Cluster
-./02-setup-cluster.sh
-
-# 2. Start Tunnel (Separate Terminal)
-minikube tunnel
-
-# 3. Deploy Stack
+# Master deployment script (runs all steps)
 ./01-deploy-all.sh
 ```
 
-### Manual Deployment
+**In a separate terminal, start the tunnel:**
+```bash
+minikube tunnel
+```
+
+That's it! The script will:
+1. Setup Minikube cluster
+2. Create secrets from `.env` file
+3. Update Git repository URL
+4. Install Flux CD
+5. Deploy all services
+
+### 📦 DevOps Scripts Reference
+
+| Script | Purpose | Usage |
+|--------|---------|-------|
+| `01-deploy-all.sh` | **Master script** - Runs full deployment | `./01-deploy-all.sh` |
+| `02-setup-cluster.sh` | Creates/manages Minikube cluster | `./02-setup-cluster.sh --force` |
+| `00-create-secrets-from-env.sh` | Creates K8s secrets from `.env` | `./00-create-secrets-from-env.sh` |
+| `03-update-secrets.sh` | Auto-generates random passwords | `./03-update-secrets.sh` |
+| `04-update-git-repo.sh` | Updates Flux Git repository URL | `./04-update-git-repo.sh [url]` |
+| `05-install-flux.sh` | Installs Flux CD with verification | `./05-install-flux.sh` |
+| `06-deploy.sh` | Deploys all HelmReleases | `./06-deploy.sh` |
+| `07-access-services.sh` | Shows service URLs | `./07-access-services.sh` |
+| `08-health-check.sh` | Comprehensive health check | `./08-health-check.sh` |
+| `09-cleanup.sh` | Tears down deployment | `./09-cleanup.sh` |
+| `10-reset-helmreleases.sh` | **Fixes stuck deployments** | `./10-reset-helmreleases.sh dev postgresql` |
+
+### 🔧 Common Operations
+
+**Check deployment health:**
+```bash
+./.devops/kube/08-health-check.sh
+```
+
+**Access services:**
+```bash
+./.devops/kube/07-access-services.sh
+```
+
+**Troubleshoot stuck pods:**
+```bash
+# Reset a specific service
+./.devops/kube/10-reset-helmreleases.sh antigravity-dev postgresql
+
+# Reset all services
+./.devops/kube/10-reset-helmreleases.sh antigravity-dev all
+```
+
+**Update Helm charts:**
+```bash
+# 1. Make changes to templates
+vim kubernetes/helm/postgresql/templates/statefulset.yaml
+
+# 2. Commit and push
+git add .
+git commit -m "Update template"
+git push
+
+# 3. Reset HelmRelease to apply
+./.devops/kube/10-reset-helmreleases.sh antigravity-dev postgresql
+```
+
+**Update secrets:**
+```bash
+# 1. Update .env file
+vim .env
+
+# 2. Recreate secrets
+./.devops/kube/00-create-secrets-from-env.sh
+
+# 3. Reset affected services
+./.devops/kube/10-reset-helmreleases.sh antigravity-dev postgresql
+```
+
+### 🎯 Manual Deployment (Advanced)
+
+If you prefer step-by-step control:
 
 1.  **Install Flux**:
     ```bash
