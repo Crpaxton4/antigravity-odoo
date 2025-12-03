@@ -35,7 +35,7 @@ spec:
       namespace: antigravity-dev
   values:
     pgadmin:
-      password: "dev-admin-changeme"
+      password: "PPwdiaFX6SeTFQgA1olM5D3F"
 ---
 apiVersion: helm.toolkit.fluxcd.io/v2
 kind: HelmRelease
@@ -57,4 +57,4 @@ spec:
   values:
     grafana:
       database:
-        password: "dev-grafana-changeme"
+        password: "PPwdiaFX6SeTFQgA1olM5D3F"
