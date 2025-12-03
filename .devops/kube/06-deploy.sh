@@ -67,6 +67,19 @@ echo ""
 echo "Deploying Kubernetes Dashboard..."
 kubectl apply -f kubernetes/flux/repositories/kubernetes-dashboard.yaml
 kubectl apply -f kubernetes/flux/infrastructure/kubernetes-dashboard.yaml
+
+# Wait for namespace to be created by HelmRelease
+echo "Waiting for kubernetes-dashboard namespace..."
+timeout=30
+while [ $timeout -gt 0 ]; do
+    if kubectl get namespace kubernetes-dashboard &> /dev/null; then
+        break
+    fi
+    sleep 1
+    timeout=$((timeout - 1))
+done
+
+# Now apply RBAC resources
 kubectl apply -f kubernetes/flux/infrastructure/dashboard-rbac.yaml
 
 echo "✓ Dashboard infrastructure applied"
