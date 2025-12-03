@@ -29,7 +29,7 @@ echo ""
 # Function to get value from .env
 get_env_value() {
     local key=$1
-    grep "^${key}=" "$ENV_FILE" | cut -d '=' -f2- | tr -d '"' | tr -d "'"
+    grep "^${key}=" "$ENV_FILE" | cut -d '=' -f2- | tr -d '"' | tr -d "'" | tr -d '\r\n'
 }
 
 # Extract values from .env
