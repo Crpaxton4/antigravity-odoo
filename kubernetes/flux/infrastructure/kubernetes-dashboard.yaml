@@ -1,0 +1,64 @@
+---
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: kubernetes-dashboard
+  namespace: flux-system
+spec:
+  interval: 30m
+  chart:
+    spec:
+      chart: kubernetes-dashboard
+      version: '>=7.0.0 <8.0.0'  # Allow patch updates, lock major version
+      sourceRef:
+        kind: HelmRepository
+        name: kubernetes-dashboard
+        namespace: flux-system
+      interval: 12h
+  targetNamespace: kubernetes-dashboard
+  install:
+    createNamespace: true
+    remediation:
+      retries: 3
+  upgrade:
+    remediation:
+      retries: 3
+  values:
+    # Dashboard configuration
+    app:
+      ingress:
+        enabled: false  # Using port-forward for local development
+      
+    # Metrics scraper (optional but recommended)
+    metricsScraper:
+      enabled: true
+    
+    # Security settings
+    extraArgs:
+      - --enable-skip-login
+      - --disable-settings-authorizer
+      - --enable-insecure-login
+      - --system-banner="Antigravity Development Cluster"
+    
+    # Service configuration
+    service:
+      type: ClusterIP  # Use ClusterIP for security
+      externalPort: 443
+    
+    # Resource limits
+    resources:
+      requests:
+        cpu: 100m
+        memory: 128Mi
+      limits:
+        cpu: 200m
+        memory: 256Mi
+    
+    # Protocol (HTTPS)
+    protocolHttp: false
+    
+    # Settings
+    settings:
+      clusterName: "Antigravity Development"
+      itemsPerPage: 25
+      resourceAutoRefreshTimeInterval: 5

@@ -63,6 +63,15 @@ kubectl wait --for=condition=ready gitrepository/antigravity-odoo -n flux-system
 
 echo ""
 
+# Deploy Kubernetes Dashboard infrastructure
+echo "Deploying Kubernetes Dashboard..."
+kubectl apply -f kubernetes/flux/repositories/kubernetes-dashboard.yaml
+kubectl apply -f kubernetes/flux/infrastructure/kubernetes-dashboard.yaml
+kubectl apply -f kubernetes/flux/infrastructure/dashboard-rbac.yaml
+
+echo "✓ Dashboard infrastructure applied"
+echo ""
+
 # Apply HelmReleases
 echo "Deploying services via HelmReleases..."
 kubectl apply -f kubernetes/flux/releases/dev/

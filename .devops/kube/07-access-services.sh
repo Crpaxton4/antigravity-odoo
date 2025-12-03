@@ -101,6 +101,22 @@ echo "  kubectl port-forward svc/prometheus 9090:9090 -n $NAMESPACE"
 echo ""
 
 echo "=========================================="
+echo "Kubernetes Dashboard"
+echo "=========================================="
+echo ""
+if kubectl get deployment kubernetes-dashboard -n kubernetes-dashboard &> /dev/null; then
+    echo "Access the dashboard with:"
+    echo "  ./.devops/kube/13-access-dashboard.sh"
+    echo ""
+    echo "Or manually:"
+    echo "  1. kubectl proxy"
+    echo "  2. Open: http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/"
+else
+    echo "Dashboard not deployed. Will be deployed automatically on next deployment."
+fi
+echo ""
+
+echo "=========================================="
 echo "Default Credentials"
 echo "=========================================="
 echo ""
