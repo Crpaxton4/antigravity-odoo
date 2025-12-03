@@ -33,7 +33,7 @@ odoo:
 
 # Existing secret for passwords (optional)
 # If set, the chart will not create a secret and will use this one instead
-existingSecret: ""
+existingSecret: "odoo-secrets"
 
 # Persistent storage for Odoo data
 persistence:
