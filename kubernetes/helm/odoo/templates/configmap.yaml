@@ -12,4 +12,6 @@ data:
     admin_passwd = admin
     db_host = {{ .Values.odoo.database.host }}
     db_port = {{ .Values.odoo.database.port }}
+    db_user = {{ .Values.odoo.database.user }}
+    db_password = ${PASSWORD}
     db_name = {{ .Values.odoo.database.name }}
