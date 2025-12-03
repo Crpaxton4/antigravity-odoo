@@ -28,7 +28,31 @@ echo ""
 echo "⚠️  Note: You'll still need to run 'minikube tunnel' in a separate terminal"
 echo ""
 
-read -p "Continue with automated deployment? (yes/NO): " CONFIRM
+read -p "Do you want to COMPLETELY WIPE the existing deployment first? (yes/NO): " WIPE_CONFIRM
+
+if [ "$WIPE_CONFIRM" = "yes" ]; then
+    echo ""
+    echo "⚠️  WARNING: You are about to PERMANENTLY DELETE all data!"
+    echo "   This will wipe all pods, PVCs, secrets, and persistent data."
+    echo ""
+    read -p "Type 'DELETE EVERYTHING' to confirm complete wipe: " WIPE_FINAL
+    
+    if [ "$WIPE_FINAL" = "DELETE EVERYTHING" ]; then
+        echo ""
+        echo "==========================================="
+        echo "Step 0/5: Complete Wipe"
+        echo "==========================================="
+        ./.devops/kube/12-complete-wipe.sh antigravity-dev --force
+        echo ""
+        echo "✓ Wipe complete. Starting fresh deployment..."
+        sleep 2
+    else
+        echo "Wipe cancelled. Proceeding with normal deployment..."
+    fi
+fi
+
+echo ""
+read -p "Continue with deployment? (yes/NO): " CONFIRM
 
 if [ "$CONFIRM" != "yes" ]; then
     echo "Deployment cancelled."
